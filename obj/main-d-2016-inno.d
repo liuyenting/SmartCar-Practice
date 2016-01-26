@@ -15,18 +15,13 @@ obj/main-d-2016-inno.o: src/main.cpp \
  C:\Users\user\git\libsccc\inc/libbase/k60/pinout_macros.h \
  C:\Users\user\git\libsccc\inc/libbase/k60/pinout/mk60f15_lqfp144_macros.h \
  C:\Users\user\git\libsccc\inc/libbase/k60/pin.h \
- C:\Users\user\git\libsccc\inc/libsc/k60/jy_mcu_bt_106.h \
- C:\Users\user\git\libsccc\inc/libbase/k60/uart.h \
- C:\Users\user\git\libsccc\inc/libsc/k60/uart_device.h \
- C:\Users\user\git\libsccc\inc/libsc/futaba_s3010.h \
- C:\Users\user\git\libsccc\inc/libsc/servo.h \
+ C:\Users\user\git\libsccc\inc/libsc/st7735r.h \
  C:\Users\user\git\libsccc\inc/libbase/helper.h \
- C:\Users\user\git\libsccc\inc/libbase/pinout_macros.h \
- C:\Users\user\git\libsccc\inc/libbase/k60/soft_pwm.h \
- C:\Users\user\git\libsccc\inc/libbase/k60/pit.h \
- C:\Users\user\git\libsccc\inc/libbase/k60/pwm.h \
- C:\Users\user\git\libsccc\inc/libbase/k60/ftm_pwm.h \
+ C:\Users\user\git\libsccc\inc/libbase/k60/soft_spi_master.h \
+ C:\Users\user\git\libsccc\inc/libbase/k60/spi_master_interface.h \
+ C:\Users\user\git\libsccc\inc/libbase/k60/spi_master.h \
  C:\Users\user\git\libsccc\inc/libsc/config.h \
  C:\Users\user\git\libsccc\inc/libsc/k60/config/2016_inno.h \
- C:\Users\user\git\libsccc\inc/libsc/alternate_motor.h \
- C:\Users\user\git\libsccc\inc/libsc/motor.h src/main.hpp
+ C:\Users\user\git\libsccc\inc/libsc/lcd.h \
+ C:\Users\user\git\libsccc\inc/libsc/tsl1401cl.h \
+ C:\Users\user\git\libsccc\inc/libbase/k60/adc.h src/main.hpp

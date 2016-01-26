@@ -33,14 +33,14 @@ int main(void) {
 	init(peripherals);
 
 	// Redirect the local buffer of the CCD object.
-	ccd_buffer_t *ccd_data = &(peripherals.ccd->GetData());
+	std::array<uint16_t, Tsl1401cl::kSensorW> ccd_data;
 
 	while(true) {
 		// Reset the buffer index, and start the acquisition.
 		peripherals.ccd->StartSample();
 		while(!peripherals.ccd->SampleProcess());
-
-		print_scan_result(ccd_data);
+		ccd_data = peripherals.ccd->GetData();
+		print_scan_result(peripherals,ccd_data);
 
 		System::DelayMs(UPDATE_INT);
 	}
@@ -53,26 +53,24 @@ void init(struct peripherals_t &peripherals) {
 	St7735r::Config st7735r_config;
 	st7735r_config.is_revert = false;
 	st7735r_config.is_bgr = false;
-	peripherals->lcd = new St7735r(st7735r_config);
+	peripherals.lcd = new St7735r(st7735r_config);
 
 	// Init the linear CCD.
-	peripherals->ccd = new Tsl1401cl(0);
+	peripherals.ccd = new Tsl1401cl(0);
 }
 
-void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t *ccd_data) {
+void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, Tsl1401cl::kSensorW>& ccd_data) {
 	// Clear the screen.
-	peripherals.ccd->Clear();
+	peripherals.lcd->Clear();
 
-	// Rect variable for reuse.
-	Lcd::Rect region;
+
 
 	// Start drawing the entire array,
 	//  since we know that the screen width is the same as the sensor width.
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
-		region = { .x = i, .y = 0,
-			          .w = 1, .h = (255-ccd_data[i])/2 };
-		peripherals.lcd->SetRegion(region);
-		peripherals.lcd->FillPixel(Lcd::kGray);
+
+		peripherals.lcd->SetRegion(Lcd::Rect(i, 0, 1, (255-ccd_data[i])/2));
+		peripherals.lcd->FillColor(Lcd::kGray);
 	}
 }
