@@ -25,8 +25,6 @@ Mcg::Config Mcg::GetMcgConfig() {
 using namespace libsc;
 using namespace libbase::k60;
 
-std::array<uint16_t, Tsl1401cl::kSensorW> ccd_data;
-
 int main(void) {
 	System::Init();
 
@@ -34,7 +32,15 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
+	// Redirect the local buffer of the CCD object.
+	ccd_buffer_t *ccd_data = &(peripherals.ccd->GetData());
+
 	while(true) {
+		// Reset the buffer index, and start the acquisition.
+		peripherals.ccd->StartSample();
+		while(!peripherals.ccd->SampleProcess());
+
+		print_scan_result(ccd_data);
 
 		System::DelayMs(UPDATE_INT);
 	}
@@ -51,4 +57,22 @@ void init(struct peripherals_t &peripherals) {
 
 	// Init the linear CCD.
 	peripherals->ccd = new Tsl1401cl(0);
+}
+
+void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t *ccd_data) {
+	// Clear the screen.
+	peripherals.ccd->Clear();
+
+	// Rect variable for reuse.
+	Lcd::Rect region;
+
+	// Start drawing the entire array,
+	//  since we know that the screen width is the same as the sensor width.
+	//  (X = 128, Y = 160)
+	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
+		region = { .x = i, .y = 0,
+			          .w = 1, .h = (255-ccd_data[i])/2 };
+		peripherals.lcd->SetRegion(region);
+		peripherals.lcd->FillPixel(Lcd::kGray);
+	}
 }
