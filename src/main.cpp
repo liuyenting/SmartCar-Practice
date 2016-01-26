@@ -1,12 +1,3 @@
-#include <cassert>
-#include <cstring>
-#include <cstdio>
-#include <libbase/k60/mcg.h>
-#include <libsc/system.h>
-#include <libbase/k60/gpio.h>
-#include <libsc/st7735r.h>  // LCD
-#include <libsc/tsl1401cl.h> // CCD
-
 #include "main.hpp"
 
 namespace libbase
@@ -40,7 +31,8 @@ int main(void) {
 		peripherals.ccd->StartSample();
 		while(!peripherals.ccd->SampleProcess());
 		ccd_data = peripherals.ccd->GetData();
-		print_scan_result(peripherals,ccd_data);
+
+		print_scan_result(peripherals, ccd_data);
 
 		System::DelayMs(UPDATE_INT);
 	}
@@ -63,14 +55,17 @@ void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, T
 	// Clear the screen.
 	peripherals.lcd->Clear();
 
-
+	Lcd::Rect region;
+	region.y = 0; // Start from the first row.
+	region.w = 1; // Bar width = 1px.
 
 	// Start drawing the entire array,
 	//  since we know that the screen width is the same as the sensor width.
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
+		region.x = i, region.h = (255-ccd_data[i])/2;
 
-		peripherals.lcd->SetRegion(Lcd::Rect(i, 0, 1, (255-ccd_data[i])/2));
+		peripherals.lcd->SetRegion(region);
 		peripherals.lcd->FillColor(Lcd::kGray);
 	}
 }
