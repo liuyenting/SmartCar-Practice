@@ -14,7 +14,8 @@
 #include <libsc/alternate_motor.h>
 #include <libsc/futaba_s3010.h>
 
-#define REFRESH_INT 10 // 50ms interval, 20FPS
+#define REFRESH_INT 5   // 50ms interval, 20FPS
+#define AVERAGE  5  // Average interva, unit: sample.
 
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 
@@ -29,9 +30,7 @@ struct peripherals_t {
 
 /* Prototypes */
 void init(struct peripherals_t &peripherals);
-
-bool bluetooth_listener(const Byte *data, const size_t data_size);
-
+double calculate_error(ccd_buffer_t &ccd_data);
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t& ccd_data);
 
 #endif
