@@ -11,8 +11,8 @@
 #include <libsc/st7735r.h>  // LCD
 #include <libsc/tsl1401cl.h> // CCD
 
-#define UPDATE_INT 30 // ~30FPS
-
+#define UPDATE_INT 50 // 50ms
+typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 /* Type definitions */
 struct peripherals_t {
 	libsc::St7735r *lcd;
@@ -21,6 +21,6 @@ struct peripherals_t {
 
 /* Prototypes */
 void init(struct peripherals_t &peripherals);
-void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, libsc::Tsl1401cl::kSensorW>& ccd_data);
+void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t& ccd_data);
 
 #endif

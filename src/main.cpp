@@ -1,5 +1,7 @@
 #include "main.hpp"
 
+
+
 namespace libbase
 {
 namespace k60
@@ -24,7 +26,7 @@ int main(void) {
 	init(peripherals);
 
 	// Redirect the local buffer of the CCD object.
-	std::array<uint16_t, Tsl1401cl::kSensorW> ccd_data;
+	ccd_buffer_t ccd_data;
 
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
@@ -55,7 +57,7 @@ void init(struct peripherals_t &peripherals) {
 	peripherals.ccd = new Tsl1401cl(0);
 }
 
-void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, Tsl1401cl::kSensorW>& ccd_data) {
+void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
 	// Clear the screen.
 	peripherals.lcd->Clear();
 
@@ -68,9 +70,7 @@ void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, T
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
 		region.x = i;
-		
-		float ratio = (float)ccd_data[i] / 4096;
-		region.h = 160 * ratio;
+		region.h = ccd_data[i];
 
 		peripherals.lcd->SetRegion(region);
 		peripherals.lcd->FillColor(Lcd::kGray);
