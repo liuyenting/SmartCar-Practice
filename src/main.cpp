@@ -154,8 +154,11 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 }
 
 bool bluetooth_listener(const uint6_t* data, const size_t data_size) {
-	new_cmd = data[0];
-	unread_cmd = true;
+	// Only write the new command when no command is in the queue.
+	if(!unread_cmd) {
+		unread_cmd = true;
+		new_cmd = data[0];
+	}
 
 	// Discard rest of the commands.
 	return true;

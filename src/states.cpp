@@ -85,6 +85,9 @@ public:
 			case 'd':
 				/* Jump to turn right state. */
 				break;
+			case 'q':
+				reinterpret_cast<Idle *>(this)->Idle::Idle();
+				break;
 			}
 		}
 		return this;
