@@ -63,7 +63,10 @@ void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, T
 	//  since we know that the screen width is the same as the sensor width.
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
-		region.x = i, region.h = (255-ccd_data[i])/2;
+		region.x = iㄤ
+		
+		float ratio = (float)ccd_data[i] / 4096;
+		region.h = 160 * ratio;
 
 		peripherals.lcd->SetRegion(region);
 		peripherals.lcd->FillColor(Lcd::kGray);
