@@ -2,6 +2,8 @@
 
 void FiniteStateMachine::run() {
 	// The state machine will start from the idle state.
-	while(true)
-		next_state(NULL);
+	while(true) {
+		next_state();
+		System::DelayMs(loop_delay);
+	}
 }
