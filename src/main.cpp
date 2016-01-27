@@ -27,7 +27,11 @@ int main(void) {
 	std::array<uint16_t, Tsl1401cl::kSensorW> ccd_data;
 
 	while(true) {
-		// Reset the buffer index, and start the acquisition.
+		// Dummy read to wipe out the charges on the CCD.
+		peripherals.ccd->StartSample();
+		while(!peripherals.ccd->SampleProcess());
+		
+		// Start the acquisition and grab the data.
 		peripherals.ccd->StartSample();
 		while(!peripherals.ccd->SampleProcess());
 		ccd_data = peripherals.ccd->GetData();
