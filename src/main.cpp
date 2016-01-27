@@ -95,10 +95,10 @@ double calculate_error(ccd_buffer_t &ccd_data) {
 
 	// Find out the upper and lower boundary of current batch of the signal.
 	for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
-		if(avg_ccd_data[i] > ccd_max_val)
-			ccd_max_val = avg_ccd_data[i];
-		if(avg_ccd_data[i] < ccd_min_val)
-			ccd_min_val = avg_ccd_data[i];
+		if(ccd_data[i] > ccd_max_val)
+			ccd_max_val = ccd_data[i];
+		if(ccd_data[i] < ccd_min_val)
+			ccd_min_val = ccd_data[i];
 	}
 
 	int threshold = (ccd_min_val + ccd_max_val) / 2;
