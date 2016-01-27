@@ -8,7 +8,7 @@ class State
 {
 public:
 	State();
-	virtual State * change_state(void *condition) = 0;
+	virtual State * change_state() = 0;
 };
 
 #endif
