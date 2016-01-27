@@ -1,5 +1,7 @@
 #include "main.hpp"
 
+
+
 namespace libbase
 {
 namespace k60
@@ -29,7 +31,7 @@ int main(void) {
 	init(peripherals);
 
 	// Redirect the local buffer of the CCD object.
-	std::array<uint16_t, Tsl1401cl::kSensorW> ccd_data;
+	ccd_buffer_t ccd_data;
 
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
@@ -80,7 +82,7 @@ bool bluetooth_listener(const Byte *data, const size_t data_size) {
 	return true;
 }
 
-void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, Tsl1401cl::kSensorW>& ccd_data) {
+void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
 	// Clear the screen.
 	// Clear() delays too much.
 	peripherals.lcd->ClearRegion();
@@ -95,8 +97,11 @@ void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, T
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
 		region.x = i;
+<<<<<<< HEAD
 
 		// TODO: Should apply auto scaling.
+=======
+>>>>>>> cf0d827efd5887e4ddce83041caaff3c9e81195a
 		region.h = ccd_data[i];
 
 		peripherals.lcd->SetRegion(region);
