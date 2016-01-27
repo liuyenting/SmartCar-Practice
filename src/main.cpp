@@ -16,6 +16,11 @@ Mcg::Config Mcg::GetMcgConfig() {
 using namespace libsc;
 using namespace libbase::k60;
 
+#include "state_machine.hpp"
+
+bool unread_new_data = false;
+Byte instruction = '\0';
+
 int main(void) {
 	System::Init();
 
@@ -30,7 +35,7 @@ int main(void) {
 		// Dummy read to wipe out the charges on the CCD.
 		peripherals.ccd->StartSample();
 		while(!peripherals.ccd->SampleProcess());
-		
+
 		// Start the acquisition and grab the data.
 		peripherals.ccd->StartSample();
 		while(!peripherals.ccd->SampleProcess());
@@ -53,11 +58,33 @@ void init(struct peripherals_t &peripherals) {
 
 	// Init the linear CCD.
 	peripherals.ccd = new Tsl1401cl(0);
+
+	// Init the bluetooth.
+	JyMcuBt106::Config bluetooth_config;
+	bluetooth_config.id = 0;
+	bluetooth_config.baud_rate = Uart::Config::BaudRate::k115200;
+	bluetooth_config.tx_buf_size = 200;
+	bluetooth_config.rx_isr = bluetooth_listener;
+	peripherals.bluetooth = new JyMcuBt106(bluetooth_config);
+
+	// Init the driving motor.
+
+	// Init the steering servo.
+}
+
+bool bluetooth_listener(const Byte *data, const size_t data_size) {
+	instruction = data[0];
+	unread_new_data = true;
+
+	// Discard rest of the data.
+	return true;
 }
 
 void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, Tsl1401cl::kSensorW>& ccd_data) {
 	// Clear the screen.
-	peripherals.lcd->Clear();
+	// Clear() delays too much.
+	peripherals.lcd->ClearRegion();
+	peripherals.lcd->FillColor(Lcd::kBlack);
 
 	Lcd::Rect region;
 	region.y = 0; // Start from the first row.
@@ -68,11 +95,11 @@ void print_scan_result(struct peripherals_t &peripherals, std::array<uint16_t, T
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
 		region.x = i;
-		
-		float ratio = (float)ccd_data[i] / 4096;
-		region.h = 160 * ratio;
+
+		// TODO: Should apply auto scaling.
+		region.h = ccd_data[i];
 
 		peripherals.lcd->SetRegion(region);
-		peripherals.lcd->FillColor(Lcd::kGray);
+		peripherals.lcd->FillColor(Lcd::kWhite);
 	}
 }
