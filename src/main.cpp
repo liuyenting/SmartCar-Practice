@@ -50,9 +50,13 @@ int main(void) {
 			peripherals.ccd->StartSample();
 			while(!peripherals.ccd->SampleProcess());
 
-			// Average the result.
-			for(int j = 0; j < Tsl1401cl::kSensorW; j++)
-				avg_ccd_data[j] = (avg_ccd_data[j] + peripherals.ccd->GetData()) / 2;
+			// Average the result from the second sample.
+			if(i == 0)
+				avg_ccd_data = peripherals.ccd->GetData();
+			else {
+				for(int j = 0; j < Tsl1401cl::kSensorW; j++)
+					avg_ccd_data[j] = (avg_ccd_data[j] + peripherals.ccd->GetData()) / 2;
+			}
 		}
 
 		error_val = calculate_error(avg_ccd_data);
