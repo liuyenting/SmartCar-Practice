@@ -11,7 +11,6 @@
 
 #include <libsc/st7735r.h>
 #include <libsc/tsl1401cl.h>
-#include <libsc/k60/jy_mcu_bt_106.h>
 #include <libsc/alternate_motor.h>
 #include <libsc/futaba_s3010.h>
 
@@ -23,8 +22,6 @@ typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 struct peripherals_t {
 	libsc::St7735r *lcd;
 	libsc::Tsl1401cl *ccd;
-
-	libsc::k60::JyMcuBt106 *bluetooth;
 
 	libsc::FutabaS3010 *steering;
 	libsc::AlternateMotor *driving;
