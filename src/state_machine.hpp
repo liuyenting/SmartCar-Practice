@@ -28,10 +28,16 @@ public:
 		curr_state = curr_state->change_state(next_state_id);
 	}
 
-	void run();
+	void set_peripherals(struct peripherals_t* _peripherals) {
+		peripherals = _peripherals;
+	}
+
+	virtual void run() = 0;
 
 private:
 	State* curr_state;
+
+	struct peripherals_t *peripherals;
 };
 
 #endif

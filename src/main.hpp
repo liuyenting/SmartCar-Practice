@@ -15,7 +15,7 @@
 #include <libsc/alternate_motor.h>
 #include <libsc/futaba_s3010.h>
 
-#define UPDATE_INT 50 // 50ms interval, 20FPS
+#define REFRESH_INT 10 // 50ms interval, 20FPS
 
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 

@@ -7,7 +7,8 @@ public:
 		: State(1) {
 	}
 
-	State *change_state(int choice) {
+	State* change_state() {
+
 		reinterpret_cast<state_2 *>(this)->state_2::state_2();
 		return this;
 	}
@@ -79,3 +80,15 @@ class StopSteeringServo : public State
 {
 
 };
+
+/*
+ * The body of the FSM.
+ */
+void FiniteStateMachine::run() {
+	while(true) {
+		if(unread_new_data)
+			next_state();
+
+		System::DelayMs(REFRESH_INT);
+	}
+}

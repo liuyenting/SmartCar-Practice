@@ -1,7 +1,5 @@
 #include "main.hpp"
 
-
-
 namespace libbase
 {
 namespace k60
@@ -18,10 +16,10 @@ Mcg::Config Mcg::GetMcgConfig() {
 using namespace libsc;
 using namespace libbase::k60;
 
-#include "state_machine.hpp"
-
 bool unread_new_data = false;
 Byte instruction = '\0';
+
+#include "state_machine.hpp"
 
 int main(void) {
 	System::Init();
@@ -30,23 +28,31 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-	// Redirect the local buffer of the CCD object.
-	ccd_buffer_t ccd_data;
+	FiniteStateMachine state_machine;
+	state_machine.set_peripherals(&peripherals);
 
-	while(true) {
-		// Dummy read to wipe out the charges on the CCD.
-		peripherals.ccd->StartSample();
-		while(!peripherals.ccd->SampleProcess());
+	// Spin up the FSM.
+	state_machine.run();
 
-		// Start the acquisition and grab the data.
-		peripherals.ccd->StartSample();
-		while(!peripherals.ccd->SampleProcess());
-		ccd_data = peripherals.ccd->GetData();
+	/*
+	   // Redirect the local buffer of the CCD object.
+	   ccd_buffer_t ccd_data;
 
-		print_scan_result(peripherals, ccd_data);
+	   while(true) {
+	   // Dummy read to wipe out the charges on the CCD.
+	   peripherals.ccd->StartSample();
+	   while(!peripherals.ccd->SampleProcess());
 
-		System::DelayMs(UPDATE_INT);
-	}
+	   // Start the acquisition and grab the data.
+	   peripherals.ccd->StartSample();
+	   while(!peripherals.ccd->SampleProcess());
+	   ccd_data = peripherals.ccd->GetData();
+
+	   print_scan_result(peripherals, ccd_data);
+
+	   System::DelayMs(UPDATE_INT);
+	   }
+	 */
 
 	return 0;
 }
@@ -97,11 +103,8 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
 		region.x = i;
-<<<<<<< HEAD
 
 		// TODO: Should apply auto scaling.
-=======
->>>>>>> cf0d827efd5887e4ddce83041caaff3c9e81195a
 		region.h = ccd_data[i];
 
 		peripherals.lcd->SetRegion(region);
