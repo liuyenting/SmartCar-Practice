@@ -104,9 +104,9 @@ double calculate_error(ccd_buffer_t &ccd_data) {
 	int threshold = (ccd_min_val + ccd_max_val) / 2;
 
 	int left_pos = -1, right_pos = -1;
-	bool state = (i < threshold);
+	bool state = (ccd_data[0] < threshold);
 	for(int i = 1; i < Tsl1401cl::kSensorW; i++) {
-		if(state ^ (i < threshold)) {
+		if(state ^ (ccd_data[i] < threshold)) {
 			// State change.
 			// Note: Record the first change as left side,
 			//        while the last change as right side.
