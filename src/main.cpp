@@ -1,7 +1,13 @@
 #include "main.hpp"
 
+#include "pid.hpp"
+#include "state_machine.hpp"
+
 using namespace libsc;
 using namespace libbase::k60;
+
+uint8_t new_cmd = '\0';
+bool unread_cmd = false;
 
 int main(void) {
 	System::Init();
@@ -80,6 +86,14 @@ void init(struct peripherals_t &peripherals) {
 	AlternateMotor::Config driving_config;
 	driving_config.id = 0;
 	peripherals.driving = new AlternateMotor(driving_config);
+
+	// Init the bluetooth.
+	JyMcuBt106::Config bluetooth_config;
+	bluetooth_config.id = 0;
+	bluetooth_config.baud_rate = Uart::Config::BaudRate::k115200;
+	bluetooth_config.tx_buf_size = 200;
+	bluetooth_config.rx_isr = bluetooth_listener;
+	peripherals.bluetooth = new JyMcuBt106(bluetooth_config);
 }
 
 double calculate_error(ccd_buffer_t &ccd_data) {
@@ -134,4 +148,12 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 		peripherals.lcd->SetRegion(region);
 		peripherals.lcd->FillColor(Lcd::kWhite);
 	}
+}
+
+bool bluetooth_listener(const uint6_t* data, const size_t data_size) {
+	new_cmd = data[0];
+	unread_cmd = true;
+
+	// Discard rest of the commands.
+	return true;
 }
