@@ -16,6 +16,9 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
+	FiniteStateMachine state_machine();
+	// state_machine.run();
+
 	Pid pid_model(REFRESH_INTERVAL,
 	              STEERING_CENTER - STEERING_RANGE,
 	              STEERING_CENTER + STEERING_RANGE,
