@@ -11,7 +11,7 @@
 #include <libsc/st7735r.h>  // LCD
 #include <libsc/tsl1401cl.h> // CCD
 
-#define UPDATE_INT 50 // 50ms, 20FPS
+#define UPDATE_INT 30 // ~30FPS
 
 /* Type definitions */
 struct peripherals_t {
