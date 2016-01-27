@@ -1,18 +1,5 @@
 #include "main.hpp"
 
-namespace libbase
-{
-namespace k60
-{
-Mcg::Config Mcg::GetMcgConfig() {
-	Mcg::Config config;
-	config.external_oscillator_khz = 50000;
-	config.core_clock_khz = 150000;
-	return config;
-}
-}
-}
-
 using namespace libsc;
 using namespace libbase::k60;
 
@@ -23,29 +10,30 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-	Pid pid_model(UPDATE_INT,
-	              500, 1300,
-	              1, 1, 1);
+	Pid pid_model(REFRESH_INTERVAL,
+	              STEERING_CENTER - STEERING_RANGE,
+	              STEERING_CENTER + STEERING_RANGE,
+	              KP, KI, KD);
 	pid_model.set_target(0.0);
 
-	ccd_buffer_t avg_ccd_data;
-
 	double error_val = 0;
-	int steer_pos = 900;
+	int steer_pos = STEERING_CENTER;
+
+	ccd_buffer_t avg_ccd_data;
 
 	// Set default steering position.
 	peripherals.steering->SetDegree(steer_pos);
 
 	// Set driving motor speed.
 	peripherals.driving->SetClockwise(false);
-	peripherals.driving->SetPower(500);
+	peripherals.driving->SetPower(DRIVING_POWER);
 
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
 		peripherals.ccd->StartSample();
 		while(!peripherals.ccd->SampleProcess());
 
-		for(int i = 0; i < AVERAGE; i++) {
+		for(int i = 0; i < AVERAGE_COUNTS; i++) {
 			// Start the acquisition and grab the data.
 			peripherals.ccd->StartSample();
 			while(!peripherals.ccd->SampleProcess());
@@ -59,15 +47,15 @@ int main(void) {
 			}
 		}
 
-		error_val = calculate_error(avg_ccd_data);
 		print_scan_result(peripherals, avg_ccd_data);
 
-		steer_pos = reinterpret_cast<int>(pid_model.calculate(error_val));
+		error_val = calculate_error(avg_ccd_data);
+		steer_pos = std::round(pid_model.calculate(error_val));
 
 		// Set steering wheel position.
 		peripherals.steering->SetDegree(steer_pos);
 
-		System::DelayMs(UPDATE_INT);
+		System::DelayMs(REFRESH_INTERVAL);
 	}
 
 	return 0;
@@ -95,17 +83,20 @@ void init(struct peripherals_t &peripherals) {
 }
 
 double calculate_error(ccd_buffer_t &ccd_data) {
-	int ccd_max_val, ccd_min_val;
+	uint16_t ccd_min_val, ccd_max_val;
+
+	// Directly assign the first value as kickstart.
+	ccd_min_val = ccd_max_val = ccd_data[0];
 
 	// Find out the upper and lower boundary of current batch of the signal.
-	for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
+	for(int i = 1; i < Tsl1401cl::kSensorW; i++) {
 		if(ccd_data[i] > ccd_max_val)
 			ccd_max_val = ccd_data[i];
 		if(ccd_data[i] < ccd_min_val)
 			ccd_min_val = ccd_data[i];
 	}
 
-	int threshold = (ccd_min_val + ccd_max_val) / 2;
+	uint16_t threshold = (ccd_min_val + ccd_max_val) / 2;
 
 	int left_pos = -1, right_pos = -1;
 	bool state = (ccd_data[0] < threshold);
@@ -126,7 +117,7 @@ double calculate_error(ccd_buffer_t &ccd_data) {
 
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
 	// Clear the screen.
-	// Clear() delays too much.
+	// peripherals.lcd->Clear(); delays too much.
 	peripherals.lcd->ClearRegion();
 	peripherals.lcd->FillColor(Lcd::kBlack);
 
@@ -138,10 +129,7 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 	//  since we know that the screen width is the same as the sensor width.
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
-		region.x = i;
-
-		// TODO: Should apply auto scaling.
-		region.h = ccd_data[i];
+		region.x = i, region.h = ccd_data[i];
 
 		peripherals.lcd->SetRegion(region);
 		peripherals.lcd->FillColor(Lcd::kWhite);

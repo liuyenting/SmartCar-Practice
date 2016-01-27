@@ -3,21 +3,23 @@
 class PidImpl
 {
 public:
-	PidImpl(double dt,    // Interval between each calculation.
-	        double min, double max, // Response boundary.
-	        double kp, double ki, double kd);
+	PidImpl(double _dt,    // Interval between each calculation.
+	        double _min, double _max, // Response boundary.
+	        double _kp, double _ki, double _kd);
 	double calculate(double target, double curr_val);
 
 private:
-	double _dt;
-	double _min, _max;
-	double _kp, _kd, _ki;
+	double dt;
+	double min, max;
+	double kp, ki, kd;
 
-	double _pre_error;
-	double _integral;
+	double prev_err_val;
+	double integral_val;
 };
 
-Pid::Pid(double dt, double min, double max, double kp, double ki, double kd) {
+Pid::Pid(double dt,
+         double min, double max,
+         double kp, double ki, double kd) {
 	pid_impl = new PidImpl(dt, min, max, kp, kd, ki);
 }
 
@@ -33,38 +35,41 @@ Pid::~Pid() {
 	delete pid_impl;
 }
 
-PidImpl::PidImpl(double dt, double min, double max, double kp, double ki, double kd)
-	: _dt(dt), _min(min), _max(max), _kp(kp), _ki(ki), _kd(kd),
-	_pre_error(0), _integral(0) {
+PidImpl::PidImpl(double _dt,
+                 double _min, double _max,
+                 double _kp, double _ki, double _kd)
+	: dt(_dt),
+	min(_min), max(_max),
+	kp(_kp), ki(_ki), kd(_kd),
+	prev_err_val(0), integral_val(0) {
 }
 
 double PidImpl::calculate(double target_val, double curr_val) {
+	// Calculate error.
+	double curr_err_val = target_val - curr_val;
 
-	// Calculate error
-	double error = target_val - curr_val;
+	// Proportional.
+	double p_out = kp * error;
 
-	// Proportional term
-	double Pout = _kp * error;
+	// Integral.
+	integral_val += curr_err_val * dt;
+	double i_out = ki * integral_val;
 
-	// Integral term
-	_integral += error * _dt;
-	double Iout = _ki * _integral;
+	// Derivative.
+	double derivative = (curr_err_val - prev_err_val) / dt;
+	double d_out = kd * derivative;
 
-	// Derivative term
-	double derivative = (error - _pre_error) / _dt;
-	double Dout = _kd * derivative;
+	// Calculate total output.
+	double output = p_out + i_out + d_out;
 
-	// Calculate total output
-	double output = Pout + Iout + Dout;
+	// Restrict to max/min.
+	if(output > max)
+		output = max;
+	else if(output < min)
+		output = min;
 
-	// Restrict to max/min
-	if(output > _max)
-		output = _max;
-	else if(output < _min)
-		output = _min;
-
-	// Save error to previous error
-	_pre_error = error;
+	// Save error to previous error.
+	prev_err_val = curr_err_val;
 
 	return output;
 }
