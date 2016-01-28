@@ -10,11 +10,8 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-	Pid pid_model(REFRESH_INTERVAL,
-	              STEERING_CENTER - STEERING_RANGE,
-	              STEERING_CENTER + STEERING_RANGE,
-	              KP, KI, KD);
-	pid_model.set_target(0.0);
+	PositionalPidController<double, int> pid_controller(0.0,
+	                                                    KP, KI, KD);
 
 	double error_val = 0;
 	int steer_pos = STEERING_CENTER;
@@ -27,6 +24,8 @@ int main(void) {
 	// Set driving motor speed.
 	peripherals.driving->SetClockwise(false);
 	peripherals.driving->SetPower(DRIVING_POWER);
+
+	pid_controller.Reset();
 
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
@@ -50,7 +49,8 @@ int main(void) {
 		print_scan_result(peripherals, avg_ccd_data);
 
 		error_val = calculate_error(avg_ccd_data);
-		steer_pos = std::round(pid_model.calculate(error_val));
+		pid_controller.OnCalc(error_val);
+		steer_pos = pid_controller.GetControlOut();
 
 		// Set steering wheel position.
 		peripherals.steering->SetDegree(steer_pos);
