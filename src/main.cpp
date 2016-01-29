@@ -16,6 +16,8 @@ Mcg::Config Mcg::GetMcgConfig() {
 using namespace libsc;
 using namespace libbase::k60;
 
+#include "pid.hpp"
+
 int main(void) {
 	System::Init();
 
@@ -23,7 +25,7 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-	Pid pid_model(UPDATE_INT,
+	Pid pid_model(REFRESH_INT,
 	              500, 1300,
 	              1, 1, 1);
 	pid_model.set_target(0.0);
@@ -63,7 +65,7 @@ int main(void) {
 		// Set steering wheel position.
 		peripherals.steering->SetDegree(steer_pos);
 
-		System::DelayMs(UPDATE_INT);
+		System::DelayMs(REFRESH_INT);
 	}
 
 	return 0;
@@ -81,7 +83,7 @@ void init(struct peripherals_t &peripherals) {
 
 	// Init the steering servo.
 	FutabaS3010::Config steering_config;
-	servo_config.id = 0;
+	steering_config.id = 0;
 	peripherals.steering = new FutabaS3010(steering_config);
 
 	// Init the driving motor.
