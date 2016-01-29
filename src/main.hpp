@@ -6,16 +6,39 @@
 #include <cstdint> // uint16_t
 #include <cstring>
 #include <array> // std::array
+
 #include <libbase/k60/mcg.h>
 #include <libsc/system.h>
+
+namespace libbase
+{
+namespace k60
+{
+Mcg::Config Mcg::GetMcgConfig() {
+	Mcg::Config config;
+	config.external_oscillator_khz = 50000;
+	config.core_clock_khz = 150000;
+	return config;
+}
+}
+}
 
 #include <libsc/st7735r.h>
 #include <libsc/tsl1401cl.h>
 #include <libsc/alternate_motor.h>
 #include <libsc/futaba_s3010.h>
 
-#define REFRESH_INT 5   // 50ms interval, 20FPS
-#define AVERAGE  5  // Average interva, unit: sample.
+#include <libutil/positional_pid_controller.h>
+
+#define REFRESH_INTERVAL 5 // 50ms interval, 20FPS
+#define AVERAGE_COUNTS  5 // Average interva, unit: sample.
+
+#define STEERING_CENTER  900
+#define STEERING_RANGE  400
+
+#define KP 1
+#define KI 1
+#define KD 1
 
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 
