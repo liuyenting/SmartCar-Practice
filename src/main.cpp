@@ -11,8 +11,8 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-	PositionalPidController<double, uint16_t> pid_controller(0.0,
-	                                                    KP, KI, KD);
+	PositionalPidController<double, uint16_t> *pid_controller
+	 = new PositionalPidController<double, uint16_t>(0.0, KP, KI, KD);
 
 	double error_val = 0;
 	int steer_pos = STEERING_CENTER;
@@ -26,7 +26,7 @@ int main(void) {
 	peripherals.driving->SetClockwise(false);
 	peripherals.driving->SetPower(DRIVING_POWER);
 
-	pid_controller.Reset();
+	pid_controller->Reset();
 
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
@@ -50,8 +50,8 @@ int main(void) {
 		print_scan_result(peripherals, avg_ccd_data);
 
 		error_val = calculate_error(avg_ccd_data);
-		pid_controller.OnCalc(error_val);
-		steer_pos = pid_controller.GetControlOut();
+		pid_controller->OnCalc(error_val);
+		steer_pos = pid_controller->GetControlOut();
 
 		// Set steering wheel position.
 		peripherals.steering->SetDegree(steer_pos);
