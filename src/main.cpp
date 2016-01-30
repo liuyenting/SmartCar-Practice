@@ -28,7 +28,7 @@ int main(void) {
 	peripherals.driving->SetPower(DRIVING_POWER);
 
 	// Timer to contain the time stamp.
-	libsc::Timer::TimerInt prev_time = libsc::System::Time();
+	Timer::TimerInt prev_time = System::Time();
 	float dt;
 
 	while(true) {
@@ -60,6 +60,8 @@ int main(void) {
 		peripherals.steering->SetDegree(steer_pos);
 
 		System::DelayMs(REFRESH_INTERVAL);
+
+		prev_time = System::Time();
 	}
 
 	return 0;
