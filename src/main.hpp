@@ -28,7 +28,7 @@ Mcg::Config Mcg::GetMcgConfig() {
 #include <libsc/alternate_motor.h>
 #include <libsc/futaba_s3010.h>
 
-#include <libutil/positional_pid_controller.h>
+#include "pid.hpp"
 
 #define REFRESH_INTERVAL 5 // 50ms interval, 20FPS
 #define AVERAGE_COUNTS  5 // Average interva, unit: sample.
@@ -37,11 +37,9 @@ Mcg::Config Mcg::GetMcgConfig() {
 #define STEERING_RANGE  400
 
 #define DRIVING_POWER 500
-
-#define KP 1
-#define KI 1
 #define KD 1
-
+#define KI 1
+#define KP 1
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 
 /* Type definitions */

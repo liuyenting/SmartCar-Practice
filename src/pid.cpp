@@ -20,6 +20,7 @@ private:
 Pid::Pid(double dt,
          double min, double max,
          double kp, double ki, double kd) {
+	set_target(0.0);
 	pid_impl = new PidImpl(dt, min, max, kp, kd, ki);
 }
 
@@ -49,7 +50,7 @@ double PidImpl::calculate(double target_val, double curr_val) {
 	double curr_err_val = target_val - curr_val;
 
 	// Proportional.
-	double p_out = kp * error;
+	double p_out = kp * curr_err_val;
 
 	// Integral.
 	integral_val += curr_err_val * dt;

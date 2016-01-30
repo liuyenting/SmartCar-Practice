@@ -2,7 +2,6 @@
 
 using namespace libsc;
 using namespace libbase::k60;
-using namespace libutil;
 
 int main(void) {
 	System::Init();
@@ -11,8 +10,11 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-	PositionalPidController<double, uint16_t> *pid_controller
-	 = new PositionalPidController<double, uint16_t>(0.0, KP, KI, KD);
+	Pid pid_model(REFRESH_INTERVAL,
+	              STEERING_CENTER - STEERING_RANGE,
+	              STEERING_CENTER + STEERING_RANGE,
+	              KP, KI, KD);
+	pid_model.set_target(0.0);
 
 	double error_val = 0;
 	int steer_pos = STEERING_CENTER;
@@ -25,8 +27,6 @@ int main(void) {
 	// Set driving motor speed.
 	peripherals.driving->SetClockwise(false);
 	peripherals.driving->SetPower(DRIVING_POWER);
-
-	pid_controller->Reset();
 
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
@@ -50,8 +50,7 @@ int main(void) {
 		print_scan_result(peripherals, avg_ccd_data);
 
 		error_val = calculate_error(avg_ccd_data);
-		pid_controller->OnCalc(error_val);
-		steer_pos = pid_controller->GetControlOut();
+		steer_pos = (int)pid_model.calculate(error_val);
 
 		// Set steering wheel position.
 		peripherals.steering->SetDegree(steer_pos);
