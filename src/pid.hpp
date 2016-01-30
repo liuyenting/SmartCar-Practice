@@ -7,8 +7,7 @@ class PidImpl;
 class Pid
 {
 public:
-	Pid(double dt, // Interval between each calculation.
-	    double min, double max,    // Response boundary.
+	Pid(double min, double max,    // Response boundary.
 	    double kp, double ki, double kd);
 	~Pid();
 
@@ -16,7 +15,9 @@ public:
 	void set_target(double _target_val);
 
 	// Return the calculation result.
-	double calculate(double curr_val);
+	double calculate(float dt, double curr_val);
+
+	void reset_time();
 
 private:
 	PidImpl *pid_impl;

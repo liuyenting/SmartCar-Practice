@@ -10,8 +10,7 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-	Pid pid_model(REFRESH_INTERVAL,
-	              STEERING_CENTER - STEERING_RANGE,
+	Pid pid_model(STEERING_CENTER - STEERING_RANGE,
 	              STEERING_CENTER + STEERING_RANGE,
 	              KP, KI, KD);
 	pid_model.set_target(0.0);
@@ -27,6 +26,10 @@ int main(void) {
 	// Set driving motor speed.
 	peripherals.driving->SetClockwise(false);
 	peripherals.driving->SetPower(DRIVING_POWER);
+
+	// Timer to contain the time stamp.
+	libsc::Timer::TimerInt prev_time = libsc::System::Time();
+	float dt;
 
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
@@ -50,7 +53,8 @@ int main(void) {
 		print_scan_result(peripherals, avg_ccd_data);
 
 		error_val = calculate_error(avg_ccd_data);
-		steer_pos = (int)pid_model.calculate(error_val);
+		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
+		steer_pos = (int)pid_model.calculate(dt, error_val);
 
 		// Set steering wheel position.
 		peripherals.steering->SetDegree(steer_pos);

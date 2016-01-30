@@ -3,13 +3,11 @@
 class PidImpl
 {
 public:
-	PidImpl(double _dt,    // Interval between each calculation.
-	        double _min, double _max, // Response boundary.
+	PidImpl(double _min, double _max, // Response boundary.
 	        double _kp, double _ki, double _kd);
-	double calculate(double target, double curr_val);
+	double calculate(float dt, double target, double curr_val);
 
 private:
-	double dt;
 	double min, max;
 	double kp, ki, kd;
 
@@ -17,35 +15,32 @@ private:
 	double integral_val;
 };
 
-Pid::Pid(double dt,
-         double min, double max,
+Pid::Pid(double min, double max,
          double kp, double ki, double kd) {
 	set_target(0.0);
-	pid_impl = new PidImpl(dt, min, max, kp, kd, ki);
+	pid_impl = new PidImpl(min, max, kp, kd, ki);
 }
 
 void Pid::set_target(double _target_val) {
 	target_val = _target_val;
 }
 
-double Pid::calculate(double curr_val) {
-	return pid_impl->calculate(target_val, curr_val);
+double Pid::calculate(float dt, double curr_val) {
+	return pid_impl->calculate(dt, target_val, curr_val);
 }
 
 Pid::~Pid() {
 	delete pid_impl;
 }
 
-PidImpl::PidImpl(double _dt,
-                 double _min, double _max,
+PidImpl::PidImpl(double _min, double _max,
                  double _kp, double _ki, double _kd)
-	: dt(_dt),
-	min(_min), max(_max),
+	: min(_min), max(_max),
 	kp(_kp), ki(_ki), kd(_kd),
 	prev_err_val(0), integral_val(0) {
 }
 
-double PidImpl::calculate(double target_val, double curr_val) {
+double PidImpl::calculate(float dt, double target_val, double curr_val) {
 	// Calculate error.
 	double curr_err_val = target_val - curr_val;
 
