@@ -47,6 +47,11 @@ struct peripherals_t {
 	libsc::St7735r *lcd;
 	libsc::Tsl1401cl *ccd;
 
+	libsc::Led *led;
+
+	libsc::LcdConsole *console;
+	libsc::LcdTypewriter *writer;
+
 	libsc::FutabaS3010 *steering;
 	libsc::AlternateMotor *driving;
 };
@@ -55,5 +60,5 @@ struct peripherals_t {
 void init(struct peripherals_t &peripherals);
 double calculate_error(ccd_buffer_t &ccd_data);
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t& ccd_data);
-
+uint16_t otsu(ccd_buffer_t &ccd_data);
 #endif

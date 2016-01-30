@@ -77,6 +77,25 @@ void init(struct peripherals_t &peripherals) {
 	// Init the linear CCD.
 	peripherals.ccd = new Tsl1401cl(0);
 
+	// Init the LED.
+	libsc::Led::Config led_config;
+	led_config.id = 3;
+	led_config.is_active_low = 0;
+	peripherals.led = new Led(led_config);
+
+	// Init the LCD console.
+	libsc::LcdConsole::Config console_config;
+	console_config.bg_colar = 0;
+	console_config.lcd = lcd;
+	console_config.text_color = 0xFFFF;
+	peripherals.console = new LcdConsole(console_config);
+
+	// Init the LCD Typewritter.
+	LcdTypewritter::Config writer_config;
+	writer_config.lcd = lcd;
+	writer_config.is_text_wrap = true;
+	peripherals.writer = new LcdTypewritter(writer_config);
+
 	// Init the steering servo.
 	FutabaS3010::Config steering_config;
 	steering_config.id = 0;
@@ -119,6 +138,37 @@ double calculate_error(ccd_buffer_t &ccd_data) {
 	}
 
 	return (left_pos + right_pos) / 2.0;
+}
+
+//Threshold algo from otsu
+uint16_t otsu(ccd_buffer_t &ccd_data){
+	uint32_t g,max=0;
+	uint16_t tt=0, ttlow=0;
+	uint8_t u0=0, u1=0, count=0, cnt=0;
+	uint16_t tr=0;
+	uint8_t pc[256] = {0};
+	uint8_t j;
+
+	for(j=5; j<=122; j++){
+		pc[*(ccd_data[j])]++;
+		tt+=*(ccd_data[j]);
+	}
+
+	for(j=0; j<=254; j++){
+		cnt=pc[j];
+		if(cnt==0) continue;
+		count+=pc[j];
+		ttlow+=cnt*j;
+		u0=ttlow/count;
+		u1=(tt-ttlow)/(118-count);
+		g=((uint32_t)(u0-u1)*(u0-u1))*((count*(118-count)))/16384;
+		if(g>max){
+			max=g;
+			tr=j;
+		}
+		if(count>=118) break;
+	}
+	return tr;
 }
 
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
