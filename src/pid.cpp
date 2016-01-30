@@ -49,7 +49,7 @@ double PidImpl::calculate(double target_val, double curr_val) {
 	double curr_err_val = target_val - curr_val;
 
 	// Proportional.
-	double p_out = kp * curr_err_val;
+	double p_out = kp * error;
 
 	// Integral.
 	integral_val += curr_err_val * dt;
