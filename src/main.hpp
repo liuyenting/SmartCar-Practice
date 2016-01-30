@@ -9,6 +9,7 @@
 
 #include <libbase/k60/mcg.h>
 #include <libsc/system.h>
+#include <libutil/positional_pid_controller.tcc>
 
 namespace libbase
 {
@@ -31,10 +32,12 @@ Mcg::Config Mcg::GetMcgConfig() {
 #include <libutil/positional_pid_controller.h>
 
 #define REFRESH_INTERVAL 5 // 50ms interval, 20FPS
-#define AVERAGE_COUNTS  5 // Average interva, unit: sample.
+#define AVERAGE_COUNTS  5 // Average interval, unit: sample.
 
 #define STEERING_CENTER  900
 #define STEERING_RANGE  400
+
+#define DRIVING_POWER 500
 
 #define KP 1
 #define KI 1

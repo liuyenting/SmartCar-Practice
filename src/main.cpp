@@ -1,6 +1,7 @@
 #include "main.hpp"
 
 using namespace libsc;
+using namespace libutil;
 using namespace libbase::k60;
 
 #include "pid.hpp"
@@ -12,14 +13,13 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-Pid pid_model(REFRESH_INT,
+Pid pid_model(REFRESH_INTERVAL,
 	              500, 1300,
 	              1, 1, 1);
 	pid_model.set_target(0.0);
 
-	ccd_buffer_t avg_ccd_data;
 
-	double error_val = 0;
+    double error_val = 0;
 	int steer_pos = STEERING_CENTER;
 
 	ccd_buffer_t avg_ccd_data;
@@ -31,7 +31,7 @@ Pid pid_model(REFRESH_INT,
 	peripherals.driving->SetClockwise(false);
 	peripherals.driving->SetPower(DRIVING_POWER);
 
-	pid_controller.Reset();
+	//pid_model.Reset();
 
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
@@ -48,19 +48,20 @@ Pid pid_model(REFRESH_INT,
 				avg_ccd_data = peripherals.ccd->GetData();
 			else {
 				for(int j = 0; j < Tsl1401cl::kSensorW; j++)
-					avg_ccd_data[j] = (avg_ccd_data[j] + peripherals.ccd->GetData()) / 2;
+			    avg_ccd_data[j] = (avg_ccd_data[j] + peripherals.ccd->GetData()[0]) / 2;
 			}
 		}
 
 		print_scan_result(peripherals, avg_ccd_data);
 
 		error_val = calculate_error(avg_ccd_data);
-		pid_controller.OnCalc(error_val);
-		steer_pos = pid_controller.GetControlOut();
+		pid_model.calculate(error_val);
+		steer_pos = (int)pid_model.calculate(error_val);
+		//steer_pos = pid_controller.GetControlOut();
 
 		// Set steering wheel position.
 		peripherals.steering->SetDegree(steer_pos);
-		System::DelayMs(REFRESH_INT);
+		System::DelayMs(REFRESH_INTERVAL);
 
 	}
 
