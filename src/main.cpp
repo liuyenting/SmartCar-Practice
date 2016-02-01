@@ -18,7 +18,7 @@ int main(void) {
 	              KP, KI, KD);
 	pid_model.set_target(64.0);
 
-	uint16_t error_val = 0;
+	int error_val = 0;
 	int steer_pos = STEERING_CENTER;
 
 	ccd_buffer_t avg_ccd_data;
@@ -108,11 +108,11 @@ void init(struct peripherals_t &peripherals) {
 	peripherals.typewriter = new LcdTypewriter(typewriter_config);
 }
 
-uint16_t calculate_error(ccd_buffer_t &ccd_data) {
-	uint32_t g, max = 0;
-	uint16_t total = 0, total_low = 0;
-	uint8_t u0 = 0, u1 = 0, count = 0, tr = 0, cnt = 0;
-	uint8_t pc[256] = { 0 };
+int calculate_error(ccd_buffer_t &ccd_data) {
+	int g, max = 0;
+	int total = 0, total_low = 0;
+	int u0 = 0, u1 = 0, count = 0, tr = 0, cnt = 0;
+	int pc[256] = { 0 };
 	for(int j = 5; j < 122; j++) {
 		pc[ccd_data[j]]++;
 		total += ccd_data[j];
