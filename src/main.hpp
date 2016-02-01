@@ -58,8 +58,7 @@ struct peripherals_t {
 
 /* Prototypes */
 void init(struct peripherals_t &peripherals);
-int calculate_error(ccd_buffer_t &ccd_data);
+double calculate_center_pos(ccd_buffer_t &ccd_data);
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t& ccd_data);
-void print_error_pos(struct peripherals_t &peripherals, double error);
 
 #endif
