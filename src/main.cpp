@@ -60,7 +60,7 @@ int main(void) {
 		print_scan_result(peripherals, avg_ccd_data);
 
 		error_val = calculate_error(avg_ccd_data);
-		print_error_pos(peripherals, error_val);
+		// print_error_pos(peripherals, error_val);
 
 		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
 		steer_pos = (int)pid_model.calculate(dt, error_val);
@@ -138,24 +138,18 @@ double calculate_error(ccd_buffer_t &ccd_data) {
 }
 
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
-	// Clear the screen.
-	// peripherals.lcd->Clear(); delays too much.
-	peripherals.lcd->ClearRegion();
-	peripherals.lcd->FillColor(Lcd::kBlack);
-
-	Lcd::Rect region;
-	region.y = GRAPH_Y; // Start from the first row.
-	region.w = 1; // Bar width = 1px.
-
-	// Start drawing the entire array,
-	//  since we know that the screen width is the same as the sensor width.
-	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
-		region.x = i;
-		region.h = (255 - ccd_data[i])/2;
+		peripherals.lcd->SetRegion(Lcd::Rect(i, (255-ccd_data[i])/2.0, 1, 1));
+		peripherals.lcd->FillPixel(Lcd::kWhite,1);
+	}
 
-		peripherals.lcd->SetRegion(region);
-		peripherals.lcd->FillColor(Lcd::kWhite);
+	// Wait 5ms to clear
+	System::DelayMs(5);
+
+	// Clear Region.
+	for(uint16_t i=0; i<Tsl1401cl::kSensorW; i++) {
+		peripherals.lcd->SetRegion(Lcd::Rect(i, (255 - ccd_data[i])/2.0, 1, 1));
+		peripherals.lcd->FillColor(libsc::Lcd::kBlack);
 	}
 }
 
@@ -166,6 +160,10 @@ void print_error_pos(struct peripherals_t &peripherals, double error) {
 
 	region.x = peripherals.lcd->GetW()/2 + (int)error;
 	region.h = peripherals.lcd->GetH() - GRAPH_Y;
+
+	sprintf(str_buf, "%.2f", error);
+	peripherals.lcd->SetRegion()
+	peripherals.typewriter->WriteString(str_buf);
 
 	peripherals.lcd->SetRegion(region);
 	peripherals.lcd->FillColor(Lcd::kRed);
