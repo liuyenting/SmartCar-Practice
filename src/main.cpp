@@ -4,6 +4,7 @@ using namespace libsc;
 using namespace libbase::k60;
 
 char str_buf[32];
+const uint16_t color = 0xFFFF;
 
 int main(void) {
 	System::Init();
@@ -139,7 +140,7 @@ double calculate_error(ccd_buffer_t &ccd_data) {
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
 		peripherals.lcd->SetRegion(Lcd::Rect(i, (255-ccd_data[i])/2.0, 1, 1));
-		peripherals.lcd->FillPixel(Lcd::kWhite,1);
+		peripherals.lcd->FillPixel(&color, 1);
 	}
 
 	// Wait 5ms to clear
