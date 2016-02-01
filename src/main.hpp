@@ -27,9 +27,6 @@ Mcg::Config Mcg::GetMcgConfig() {
 #include <libsc/tsl1401cl.h>
 #include <libsc/alternate_motor.h>
 #include <libsc/futaba_s3010.h>
-#include <libsc/led.h>
-#include <libsc/lcd_console.h>
-#include <libsc/lcd_typewriter.h>
 
 #include "pid.hpp"
 
@@ -39,15 +36,12 @@ Mcg::Config Mcg::GetMcgConfig() {
 #define STEERING_CENTER  900
 #define STEERING_RANGE  400
 
-#define BLUE	0x001F
-#define CYAN	0x07FF
-#define BLACK	0x0000
-//#define WHITE	0xFFFF
+#define DRIVING_POWER 500
 
-#define DRIVING_POWER 0
 #define KD 1
 #define KI 1
-#define KP 1*3.5
+#define KP 1
+
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 
 /* Type definitions */
@@ -55,21 +49,15 @@ struct peripherals_t {
 	libsc::St7735r *lcd;
 	libsc::Tsl1401cl *ccd;
 
-	libsc::Led *led;
-
-	libsc::LcdConsole *console;
-	libsc::LcdTypewriter *writer;
-
 	libsc::FutabaS3010 *steering;
 	libsc::AlternateMotor *driving;
 
-	//libsc::
+	libsc::LcdTypeWriter *typewriter;
 };
 
 /* Prototypes */
 void init(struct peripherals_t &peripherals);
 double calculate_error(ccd_buffer_t &ccd_data);
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t& ccd_data);
-//uint16_t otsu(ccd_buffer_t &ccd_data);
-uint16_t otsu(uint16_t *);
+
 #endif
