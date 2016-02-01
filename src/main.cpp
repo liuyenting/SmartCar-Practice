@@ -57,8 +57,8 @@ int main(void) {
 		error_val = calculate_error(avg_ccd_data);
 
 		sprintf(str_buf, "ERR = %.2f", error_val);
-		peripherals.console->SetCursorRow(0);
-		peripherals.console->WriteString(str_buf);
+		peripherals.lcd->SetRegion(Lcd::Rect(0, 0, 128, 16));
+		peripherals.typewriter->WriteString(str_buf);
 		// print_error_pos(peripherals, error_val);
 
 		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
@@ -96,12 +96,11 @@ void init(struct peripherals_t &peripherals) {
 	peripherals.driving = new AlternateMotor(driving_config);
 
 	// Init the type writer for debug information.
-	LcdConsole::Config console_config;
-	console_config.lcd = peripherals.lcd;
-	console_config.text_color = Lcd::kWhite;
-	console_config.bg_color = Lcd::kBlack;
-	console_config.region = Lcd::Rect { 0, 0, 128, 54 };
-	peripherals.console = new LcdConsole(console_config);
+	LcdTypewriter::Config typewriter_config;
+	typewriter_config.lcd = peripherals.lcd;
+	typewriter_config.text_color = Lcd::kWhite;
+	typewriter_config.bg_color = Lcd::kBlack;
+	peripherals.typewriter = new LcdTypewriter(typewriter_config);
 }
 
 double calculate_error(ccd_buffer_t &ccd_data) {

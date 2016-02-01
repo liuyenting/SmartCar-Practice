@@ -27,6 +27,7 @@ Mcg::Config Mcg::GetMcgConfig() {
 #include <libsc/tsl1401cl.h>
 #include <libsc/alternate_motor.h>
 #include <libsc/futaba_s3010.h>
+#include <libsc/lcd_typewriter.h>
 
 #include "pid.hpp"
 
@@ -52,7 +53,7 @@ struct peripherals_t {
 	libsc::FutabaS3010 *steering;
 	libsc::AlternateMotor *driving;
 
-	libsc::LcdConsole *console;
+	libsc::LcdTypewriter *typewriter;
 };
 
 /* Prototypes */
