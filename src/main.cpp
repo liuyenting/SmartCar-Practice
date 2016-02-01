@@ -4,9 +4,9 @@ using namespace libsc;
 using namespace libbase::k60;
 
 #define LINE_1_Y   0
-#define LINE_2_Y   18
-#define LINE_3_Y  36
-#define GRAPH_Y  54
+#define LINE_2_Y   peripherals.typewriter->GetFontH()*1;
+#define LINE_3_Y  peripherals.typewriter->GetFontH()*2;
+#define GRAPH_Y  peripherals.typewriter->GetFontH()*3;
 
 int main(void) {
 	System::Init();
@@ -149,7 +149,13 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 	//  since we know that the screen width is the same as the sensor width.
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
-		region.x = i, region.h = ccd_data[i];
+		region.x = i;
+
+		// Wrap the height.
+		int height = ccd_data[i];
+		if(height > peripherals.lcd->GetH() - GRAPH_Y)
+			height = peripherals.lcd->GetH() - GRAPHY_Y;
+		region.h = height;
 
 		peripherals.lcd->SetRegion(region);
 		peripherals.lcd->FillColor(Lcd::kWhite);
@@ -161,8 +167,8 @@ void print_error_pos(struct peripherals_t &peripherals, double error) {
 	region.y = GRAPH_Y;
 	region.w = 3;
 
-	region.x = 64 + (int)error;
-	region.h = 160 - GRAPH_Y;
+	region.x = peripherals.lcd->GetW()/2 + (int)error;
+	region.h = peripherals.lcd->GetH() - GRAPH_Y;
 
 	peripherals.lcd->SetRegion(region);
 	peripherals.lcd->FillColor(Lcd::kRed);
