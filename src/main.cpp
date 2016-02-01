@@ -152,12 +152,7 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 	//  (X = 128, Y = 160)
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
 		region.x = i;
-
-		// Wrap the height.
-		int height = 255 - ccd_data[i];
-		if(height > peripherals.lcd->GetH() - GRAPH_Y)
-			height = peripherals.lcd->GetH() - GRAPHY_Y;
-		region.h = height;
+		region.h = (255 - ccd_data[i])/2;
 
 		peripherals.lcd->SetRegion(region);
 		peripherals.lcd->FillColor(Lcd::kWhite);
