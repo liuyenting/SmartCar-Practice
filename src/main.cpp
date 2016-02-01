@@ -8,6 +8,8 @@ using namespace libbase::k60;
 #define LINE_3_Y  peripherals.typewriter->GetFontH()*2;
 #define GRAPH_Y  peripherals.typewriter->GetFontH()*3;
 
+char str_buf[32];
+
 int main(void) {
 	System::Init();
 
@@ -152,7 +154,7 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 		region.x = i;
 
 		// Wrap the height.
-		int height = ccd_data[i];
+		int height = 255 - ccd_data[i];
 		if(height > peripherals.lcd->GetH() - GRAPH_Y)
 			height = peripherals.lcd->GetH() - GRAPHY_Y;
 		region.h = height;
