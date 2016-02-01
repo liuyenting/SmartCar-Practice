@@ -37,7 +37,7 @@ Mcg::Config Mcg::GetMcgConfig() {
 #define STEERING_CENTER  900
 #define STEERING_RANGE  400
 
-#define DRIVING_POWER 500
+#define DRIVING_POWER 0
 
 #define KD 1
 #define KI 1
