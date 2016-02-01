@@ -119,8 +119,8 @@ double calculate_error(ccd_buffer_t &ccd_data) {
 	uint16_t threshold = (ccd_min_val + ccd_max_val) / 2;
 
 	int left_pos = -1, right_pos = -1;
-	bool state = (ccd_data[0] < threshold);
-	for(int i = 1; i < Tsl1401cl::kSensorW; i++) {
+	bool state = (ccd_data[10] < threshold);
+	for(int i = 11; i < Tsl1401cl::kSensorW - 10; i++) {
 		if(state ^ (ccd_data[i] < threshold)) {
 			// State change.
 			// Note: Record the first change as left side,
@@ -148,7 +148,7 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 	// Start drawing the entire array,
 	//  since we know that the screen width is the same as the sensor width.
 	//  (X = 128, Y = 160)
-	for(uint16_t i = 10; i < Tsl1401cl::kSensorW-10; i++) {
+	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
 		region.x = i, region.h = ccd_data[i];
 
 		peripherals.lcd->SetRegion(region);
