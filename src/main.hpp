@@ -59,5 +59,6 @@ struct peripherals_t {
 void init(struct peripherals_t &peripherals);
 double calculate_error(ccd_buffer_t &ccd_data);
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t& ccd_data);
+void print_error_pos(struct peripherals_t &peripherals, double error);
 
 #endif

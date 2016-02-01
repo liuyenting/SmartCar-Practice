@@ -3,6 +3,11 @@
 using namespace libsc;
 using namespace libbase::k60;
 
+#define LINE_1_Y   0
+#define LINE_2_Y   18
+#define LINE_3_Y  36
+#define GRAPH_Y  54
+
 int main(void) {
 	System::Init();
 
@@ -53,6 +58,8 @@ int main(void) {
 		print_scan_result(peripherals, avg_ccd_data);
 
 		error_val = calculate_error(avg_ccd_data);
+		print_error_pos(peripherals, error_val);
+
 		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
 		steer_pos = (int)pid_model.calculate(dt, error_val);
 
@@ -135,16 +142,28 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 	peripherals.lcd->FillColor(Lcd::kBlack);
 
 	Lcd::Rect region;
-	region.y = 53; // Start from the first row.
+	region.y = GRAPH_Y; // Start from the first row.
 	region.w = 1; // Bar width = 1px.
 
 	// Start drawing the entire array,
 	//  since we know that the screen width is the same as the sensor width.
 	//  (X = 128, Y = 160)
-	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
+	for(uint16_t i = 10; i < Tsl1401cl::kSensorW-10; i++) {
 		region.x = i, region.h = ccd_data[i];
 
 		peripherals.lcd->SetRegion(region);
 		peripherals.lcd->FillColor(Lcd::kWhite);
 	}
+}
+
+void print_error_pos(struct peripherals_t &peripherals, double error) {
+	Lcd::Rect region;
+	region.y = GRAPH_Y;
+	region.w = 3;
+
+	region.x = 64 + (int)error;
+	region.h = 160 - GRAPH_Y;
+
+	peripherals.lcd->SetRegion(region);
+	peripherals.lcd->FillColor(Lcd::kRed);
 }
