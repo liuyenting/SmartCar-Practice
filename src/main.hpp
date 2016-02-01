@@ -52,7 +52,7 @@ struct peripherals_t {
 	libsc::FutabaS3010 *steering;
 	libsc::AlternateMotor *driving;
 
-	libsc::LcdTypeWriter *typewriter;
+	libsc::LcdConsole *console;
 };
 
 /* Prototypes */

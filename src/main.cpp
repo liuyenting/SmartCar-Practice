@@ -3,11 +3,6 @@
 using namespace libsc;
 using namespace libbase::k60;
 
-#define LINE_1_Y   0
-#define LINE_2_Y   peripherals.typewriter->GetFontH()*1;
-#define LINE_3_Y  peripherals.typewriter->GetFontH()*2;
-#define GRAPH_Y  peripherals.typewriter->GetFontH()*3;
-
 char str_buf[32];
 
 int main(void) {
@@ -60,6 +55,10 @@ int main(void) {
 		print_scan_result(peripherals, avg_ccd_data);
 
 		error_val = calculate_error(avg_ccd_data);
+
+		sprintf(str_buf, "ERR = %.2f", error_val);
+		peripherals.console->SetCursorRow(0);
+		peripherals.console->WriteString(str_buf);
 		// print_error_pos(peripherals, error_val);
 
 		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
@@ -97,11 +96,12 @@ void init(struct peripherals_t &peripherals) {
 	peripherals.driving = new AlternateMotor(driving_config);
 
 	// Init the type writer for debug information.
-	LcdTypewriter::Config typewriter_config;
-	typewriter_config.lcd = peripherals.lcd;
-	typewriter_config.text_color = Lcd::kWhite;
-	typewriter_config.bg_color = Lcd::kBlack;
-	peripherals.typewriter = new LcdTypewriter(typewriter_config);
+	LcdConsole::Config console_config;
+	console_config.lcd = peripherals.lcd;
+	console_config.text_color = Lcd::kWhite;
+	console_config.bg_color = Lcd::kBlack;
+	console_config.region = Lcd::Rect { 0, 0, 128, 54 };
+	peripherals.console = new LcdConsole(console_config);
 }
 
 double calculate_error(ccd_buffer_t &ccd_data) {
@@ -154,17 +154,5 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 }
 
 void print_error_pos(struct peripherals_t &peripherals, double error) {
-	Lcd::Rect region;
-	region.y = GRAPH_Y;
-	region.w = 3;
 
-	region.x = peripherals.lcd->GetW()/2 + (int)error;
-	region.h = peripherals.lcd->GetH() - GRAPH_Y;
-
-	sprintf(str_buf, "%.2f", error);
-	peripherals.lcd->SetRegion()
-	peripherals.typewriter->WriteString(str_buf);
-
-	peripherals.lcd->SetRegion(region);
-	peripherals.lcd->FillColor(Lcd::kRed);
 }
