@@ -16,9 +16,9 @@ int main(void) {
 	Pid pid_model(STEERING_CENTER - STEERING_RANGE,
 	              STEERING_CENTER + STEERING_RANGE,
 	              KP, KI, KD);
-	pid_model.set_target(0.0);
+	pid_model.set_target(64.0);
 
-	double error_val = 0;
+	uint16_t error_val = 0;
 	int steer_pos = STEERING_CENTER;
 
 	ccd_buffer_t avg_ccd_data;
@@ -57,13 +57,17 @@ int main(void) {
 
 		error_val = calculate_error(avg_ccd_data);
 
-		sprintf(str_buf, "ERR = %.2f", error_val);
+		sprintf(str_buf, "ERR = %d", error_val);
 		peripherals.lcd->SetRegion(Lcd::Rect(0, 0, 128, 16));
 		peripherals.typewriter->WriteString(str_buf);
 		// print_error_pos(peripherals, error_val);
 
 		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
-		steer_pos = (int)pid_model.calculate(dt, error_val);
+		steer_pos = pid_model.calculate(dt, (double)error_val);
+
+		sprintf(str_buf, "POS = %d", steer_pos);
+		peripherals.lcd->SetRegion(Lcd::Rect(0, 16, 128, 16));
+		peripherals.typewriter->WriteString(str_buf);
 
 		// Set steering wheel position.
 		peripherals.steering->SetDegree(steer_pos);
@@ -104,43 +108,38 @@ void init(struct peripherals_t &peripherals) {
 	peripherals.typewriter = new LcdTypewriter(typewriter_config);
 }
 
-double calculate_error(ccd_buffer_t &ccd_data) {
-	uint16_t ccd_min_val, ccd_max_val;
-
-	// Directly assign the first value as kickstart.
-	ccd_min_val = ccd_max_val = ccd_data[0];
-
-	// Find out the upper and lower boundary of current batch of the signal.
-	for(int i = 1; i < Tsl1401cl::kSensorW; i++) {
-		if(ccd_data[i] > ccd_max_val)
-			ccd_max_val = ccd_data[i];
-		if(ccd_data[i] < ccd_min_val)
-			ccd_min_val = ccd_data[i];
+uint16_t calculate_error(ccd_buffer_t &ccd_data) {
+	uint32_t g, max = 0;
+	uint16_t total = 0, total_low = 0;
+	uint8_t u0 = 0, u1 = 0, count = 0, tr = 0, cnt = 0;
+	uint8_t pc[256] = { 0 };
+	for(int j = 5; j < 122; j++) {
+		pc[ccd_data[j]]++;
+		total += ccd_data[j];
 	}
-
-	uint16_t threshold = (ccd_min_val + ccd_max_val) / 2;
-
-	int left_pos = -1, right_pos = -1;
-	bool state = (ccd_data[10] < threshold);
-	for(int i = 11; i < Tsl1401cl::kSensorW - 10; i++) {
-		if(state ^ (ccd_data[i] < threshold)) {
-			// State change.
-			// Note: Record the first change as left side,
-			//        while the last change as right side.
-			if(left_pos == -1)
-				left_pos = i;
-			else
-				right_pos = i;
+	for(int j = 0; j < 254; j++) {
+		cnt = pc[j];
+		if(cnt == 0)
+			continue;
+		count += pc[j];
+		total_low += cnt * j;
+		u0 = total_low / count;
+		u1 = (total - total_low) / (118 - count);
+		g = ((uint32_t)(u0 - u1) * (u0 - u1)) * ((count * (118 - count))) / 16384;
+		if(g > max) {
+			max = g;
+			tr = j;
 		}
+		if(count >= 118)
+			break;
 	}
-
-	return (left_pos + right_pos) / 2.0;
+	return tr;
 }
 
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
 		peripherals.lcd->SetRegion(Lcd::Rect(i, (255-ccd_data[i])/2.0, 1, 1));
-		peripherals.lcd->FillPixel(&color, 1);
+		peripherals.lcd->FillColor(Lcd::kWhite);
 	}
 
 	// Wait 5ms to clear
@@ -149,7 +148,7 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 	// Clear Region.
 	for(uint16_t i=0; i<Tsl1401cl::kSensorW; i++) {
 		peripherals.lcd->SetRegion(Lcd::Rect(i, (255 - ccd_data[i])/2.0, 1, 1));
-		peripherals.lcd->FillColor(libsc::Lcd::kBlack);
+		peripherals.lcd->FillColor(Lcd::kBlack);
 	}
 }
 
