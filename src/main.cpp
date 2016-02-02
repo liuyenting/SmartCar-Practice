@@ -6,7 +6,6 @@ using namespace libbase::k60;
 char str_buf[32];
 const uint16_t color = 0xFFFF;
 
-#define THRESHOLD 100
 #define LEFT_POS 40
 #define RIGHT_POS 60
 
@@ -52,7 +51,7 @@ int main(void) {
 
 		center_pos = calculate_center_pos(avg_ccd_data);
 
-		sprintf(str_buf, "ERR = %.2f", error_val);
+		sprintf(str_buf, "ERR = %.2f", center_pos);
 		peripherals.lcd->SetRegion(Lcd::Rect(0, 0, 128, 16));
 		peripherals.typewriter->WriteString(str_buf);
 		// print_error_pos(peripherals, error_val);
@@ -107,21 +106,42 @@ void init(struct peripherals_t &peripherals) {
 }
 
 double calculate_center_pos(ccd_buffer_t &ccd_data) {
-	// Find out the upper and lower boundary of current batch of the signal.
-	for(int i = 10; i < Tsl1401cl::kSensorW - 10; i++)
-		ccd_data[i] = (ccd_data[i] > THRESHOLD);
-
-	int left_pos, right_pos;
-	for(left_pos = 10; left_pos < Tsl1401cl::kSensorW - 10; left_pos++) {
-		if(ccd_data[i])
-			break;
-	}
-	for(right_pos = left_pos + 1; right_pos < Tsl1401cl::kSensorW - 10; right_pos++) {
-		if(!ccd_data[i])
-			break;
+	// Search for the minimum and maximum value.
+	uint16_t min_val, max_val;
+	min_val = max_val = ccd_dat[0]; // Default value is the first element.
+	for(int i = 1; i < Tsl1401cl::kSensorW; i++) {
+		if(ccd_data[i] < min_val)
+			min_val = ccd_data[i];
+		else if(ccd_data[i] > max_val)
+			max_val = ccd_data[i];
 	}
 
-	return (left_pos + right_pos) / 2.0;
+	uint16_t threshold = (min_val + max_val) / 2;
+	// Perform binary operation on the values.
+	for(int i = 0; i < Tsl1401cl::kSensorW; i++)
+		ccd_data[i] = (ccd_data[i] > threshold);
+
+	// Calculate the average position.
+	double center = 0;
+	for(int i = 0; i < Tsl1401cl::kSensorW; i++)
+		center += i * ccd_data[i]; // The bins are weighted by their positions.
+	center /= 128;
+
+	// If you only wants to divide by the bins that are taken into account,
+	// comment out the following section.
+	/*
+	   double center = 0;
+	   uint16_t cnt = 0;
+	   for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
+	   if(ccd_data[i]) {
+	   ++cnt;
+	   center += i;
+	   }
+	   }
+	   center /= cnt;
+	 */
+
+	return center;
 }
 
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
