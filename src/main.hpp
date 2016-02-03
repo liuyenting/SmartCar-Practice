@@ -54,12 +54,20 @@ typedef struct struct_peripherals_t {
 typedef struct struct_range_t {
 	int min;
 	int max;
+
+	struct_range_t(int _min, int _max)
+		: min(_min), max(_max) {
+	}
 } range_t;
 
 typedef struct struct_pid_var_t {
 	double kp;
 	double ki;
 	double kd;
+
+	struct_pid_var_t(double _kp, double _ki, double _kd)
+		: kp(_kp), ki(_ki), kd(_kd) {
+	}
 } pid_var_t;
 
 /* Prototypes */
