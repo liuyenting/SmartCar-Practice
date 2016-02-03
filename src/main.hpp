@@ -41,7 +41,7 @@ Mcg::Config Mcg::GetMcgConfig() {
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 
 /* Type definitions */
-typedef struct {
+typedef struct struct_peripherals_t {
 	libsc::St7735r *lcd;
 	libsc::Tsl1401cl *ccd;
 
@@ -51,12 +51,12 @@ typedef struct {
 	libsc::LcdTypewriter *typewriter;
 } peripherals_t;
 
-typedef struct {
+typedef struct struct_range_t {
 	int min;
 	int max;
 } range_t;
 
-typedef struct {
+typedef struct struct_pid_var_t {
 	double kp;
 	double ki;
 	double kd;
