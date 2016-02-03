@@ -38,16 +38,6 @@ Mcg::Config Mcg::GetMcgConfig() {
 
 #define INI_DRIVING_POWER 500
 
-// K for servo
-#define KD 0
-#define KI 0
-#define KP 18
-
-// k for motor
-#define kd 0
-#define ki 0
-#define kp 10
-
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 
 /* Type definitions */

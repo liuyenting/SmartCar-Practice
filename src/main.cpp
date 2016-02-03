@@ -5,6 +5,8 @@ using namespace libbase::k60;
 
 char str_buf[32];
 
+#define USE_LCD
+
 const pid_var_t pid_servo_var = { .kp = 18, .ki = 0, .kd = 0 };
 const pid_var_t pid_motor_var = { .kp = 10, .ki = 0, .kd = 0 };
 
@@ -43,7 +45,7 @@ int main(void) {
 	peripherals.driving->SetPower(drive_pwr);
 
 	// Start the timer.
-	libsc::Timer::TimerInt prev_time = libsc::System::Time();
+	Timer::TimerInt prev_time = System::Time();
 	float dt;
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
@@ -63,7 +65,9 @@ int main(void) {
 					avg_ccd_data[j] = (avg_ccd_data[j] + peripherals.ccd->GetData()[j]) / 2;
 			}
 		}
+		#ifdef USE_LCD
 		print_scan_result(peripherals, avg_ccd_data);
+		#endif
 
 		center_pos = calculate_center_pos(avg_ccd_data);
 
@@ -77,6 +81,7 @@ int main(void) {
 		peripherals.steering->SetDegree(steer_pos);
 		peripherals.driving->SetPower(drive_pwr);
 
+		#ifdef USE_LCD
 		// Print the variables.
 		sprintf(str_buf, "ERR = %.2f", center_pos);
 		peripherals.lcd->SetRegion(Lcd::Rect(0, 0, 128, 16));
@@ -87,6 +92,7 @@ int main(void) {
 		sprintf(str_buf, "PWR = %d", drive_pwr);
 		peripherals.lcd->SetRegion(Lcd::Rect(0, 32, 128, 16));
 		peripherals.typewriter->WriteString(str_buf);
+		#endif
 
 		System::DelayMs(REFRESH_INTERVAL);
 	}
