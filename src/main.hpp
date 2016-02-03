@@ -35,21 +35,18 @@ Mcg::Config Mcg::GetMcgConfig() {
 #define AVERAGE_COUNTS  5 // Average interval, unit: sample.
 
 #define STEERING_CENTER 1000
-#define STEERING_RANGE  600
 
 #define INI_DRIVING_POWER 500
-#define LOWEST_DRIVING 250
 
-//K for servo
+// K for servo
 #define KD 0
 #define KI 0
 #define KP 18
 
-//k for motor
+// k for motor
 #define kd 0
 #define ki 0
 #define kp 10
-
 
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 
@@ -63,6 +60,17 @@ struct peripherals_t {
 
 	libsc::LcdTypewriter *typewriter;
 };
+
+typedef struct {
+	int min;
+	int max;
+} range_t;
+
+typedef struct {
+	double kp;
+	double ki;
+	double kd;
+} pid_var_t;
 
 /* Prototypes */
 void init(struct peripherals_t &peripherals);

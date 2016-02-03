@@ -4,10 +4,12 @@ using namespace libsc;
 using namespace libbase::k60;
 
 char str_buf[32];
-const uint16_t color = 0xFFFF;
 
-#define LEFT_POS 60
-#define RIGHT_POS 80
+const pid_var_t pid_servo_var = { .kp = 18, .ki = 0, .kd = 0 };
+const pid_var_t pid_motor_var = { .kp = 10, .ki = 0, .kd = 0 };
+
+const range_t pid_servo_range = { .min = -600, .max = 600 };
+const range_t pid_motor_range = { .min = -250, .max = 250 };
 
 int main(void) {
 	System::Init();
@@ -16,27 +18,31 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-	//init pid for servo and motor
-	Pid pidservo(-STEERING_RANGE,STEERING_RANGE,KP,KI,KD);
-	pidservo.set_target(64.0);
+	// init pid for servo and motor
+	Pid pid_servo(pid_servo_range.min, pid_servo_range.max,
+	              pid_servo_var.kp, pid_servo_var.ki, pid_servo_var.kd);
+	pid_servo.set_target(63.0);
 
-	Pid pidmotor(-LOWEST_DRIVING,LOWEST_DRIVING,kp,ki,kd);
-	pidmotor.set_target(64.0);
+	Pid pid_motor(pid_motor_range.min, pid_motor_range.max,
+	              pid_motor_var.kp, pid_motor_var.ki, pid_motor_var.kd);
+	pid_motor.set_target(63.0);
 
 	double center_pos = 0;
-	int steer_pos = STEERING_CENTER;
 
-	int driving_power = 0;
+	// Variables to store the driving details.
+	int steer_pos = STEERING_CENTER;
+	int drive_pwr = INI_DRIVING_POWER;
 
 	ccd_buffer_t avg_ccd_data;
 
 	// Set default steering position.
 	peripherals.steering->SetDegree(steer_pos);
 
-	// Set driving motor speed.
+	// Set initial driving motor speed.
 	peripherals.driving->SetClockwise(false);
-	peripherals.driving->SetPower(INI_DRIVING_POWER);
-	//start to count the dt
+	peripherals.driving->SetPower(drive_pwr);
+
+	// Start the timer.
 	libsc::Timer::TimerInt prev_time = libsc::System::Time();
 	float dt;
 	while(true) {
@@ -57,44 +63,30 @@ int main(void) {
 					avg_ccd_data[j] = (avg_ccd_data[j] + peripherals.ccd->GetData()[j]) / 2;
 			}
 		}
-
 		print_scan_result(peripherals, avg_ccd_data);
 
 		center_pos = calculate_center_pos(avg_ccd_data);
 
-        //print center_pos
+		// Time elapsed since last calculation.
+		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
+		// Calculate the new steering wheel positoin and adapated driving speed.
+		steer_pos = STEERING_CENTER + (int)pid_servo.calculate(dt, center_pos);
+		drive_pwr = INI_DRIVING_POWER - (int)pid_motor.calculate(dt, center_pos); // THIS SHOULD BE steer_pos
+
+		// Apply the newly calculated result.
+		peripherals.steering->SetDegree(steer_pos);
+		peripherals.driving->SetPower(drive_pwr);
+
+		// Print the variables.
 		sprintf(str_buf, "ERR = %.2f", center_pos);
 		peripherals.lcd->SetRegion(Lcd::Rect(0, 0, 128, 16));
 		peripherals.typewriter->WriteString(str_buf);
-
-
-		// Change the steering position.
-		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
-		steer_pos = STEERING_CENTER+(int)pidservo.calculate(dt,center_pos);
-		if((int)pidmotor.calculate(dt,center_pos)>0)
-		driving_power = INI_DRIVING_POWER-(int)pidmotor.calculate(dt,center_pos);
-		else
-		driving_power = INI_DRIVING_POWER+(int)pidmotor.calculate(dt,center_pos);
-
-		/*if(center_pos < LEFT_POS)
-			steer_pos = 1450;
-		else if(center_pos > RIGHT_POS)
-			steer_pos = 450;
-		else
-			steer_pos = 1000;
-		*/
-
-
-		//print steer_pos
 		sprintf(str_buf, "POS = %d", steer_pos);
 		peripherals.lcd->SetRegion(Lcd::Rect(0, 16, 128, 16));
 		peripherals.typewriter->WriteString(str_buf);
-
-		// Set steering wheel position.
-		peripherals.steering->SetDegree(steer_pos);
-
-		//set the driving speed
-		peripherals.driving->SetPower(driving_power);
+		sprintf(str_buf, "PWR = %d", drive_pwr);
+		peripherals.lcd->SetRegion(Lcd::Rect(0, 32, 128, 16));
+		peripherals.typewriter->WriteString(str_buf);
 
 		System::DelayMs(REFRESH_INTERVAL);
 	}
@@ -144,11 +136,10 @@ double calculate_center_pos(ccd_buffer_t &ccd_data) {
 	uint16_t threshold = (min_val + max_val) / 2;
 	// Perform binary operation on the values.
 	int count = 0;
-	for(int i = 0; i < Tsl1401cl::kSensorW; i++)
-	{
+	for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
 		ccd_data[i] = (ccd_data[i] > threshold);
 		if(ccd_data[i])
-		count++;
+			count++;
 	}
 
 	// Calculate the average position.
@@ -156,20 +147,6 @@ double calculate_center_pos(ccd_buffer_t &ccd_data) {
 	for(int i = 0; i < Tsl1401cl::kSensorW; i++)
 		center += i * ccd_data[i]; // The bins are weighted by their positions.
 	center /= count;
-
-	// If you only wants to divide by the bins that are taken into account,
-	// comment out the following section.
-	/*
-	   double center = 0;
-	   uint16_t cnt = 0;
-	   for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
-	   if(ccd_data[i]) {
-	   ++cnt;
-	   center += i;
-	   }
-	   }
-	   center /= cnt;
-	 */
 
 	return center;
 }
