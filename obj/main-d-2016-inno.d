@@ -33,4 +33,5 @@ obj/main-d-2016-inno.o: src/main.cpp src/main.hpp \
  C:\Users\user\git\libsccc\inc/libsc/futaba_s3010.h \
  C:\Users\user\git\libsccc\inc/libsc/servo.h \
  C:\Users\user\git\libsccc\inc/libbase/k60/soft_pwm.h \
- C:\Users\user\git\libsccc\inc/libbase/k60/pit.h src/pid.hpp
+ C:\Users\user\git\libsccc\inc/libbase/k60/pit.h \
+ C:\Users\user\git\libsccc\inc/libsc/lcd_typewriter.h src/pid.hpp

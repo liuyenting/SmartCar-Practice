@@ -108,8 +108,8 @@ void init(struct peripherals_t &peripherals) {
 double calculate_center_pos(ccd_buffer_t &ccd_data) {
 	// Search for the minimum and maximum value.
 	uint16_t min_val, max_val;
-	min_val = max_val = ccd_dat[0]; // Default value is the first element.
-	for(int i = 1; i < Tsl1401cl::kSensorW; i++) {
+	min_val = max_val = ccd_data[0]; // Default value is the first element.
+	for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
 		if(ccd_data[i] < min_val)
 			min_val = ccd_data[i];
 		else if(ccd_data[i] > max_val)
@@ -118,14 +118,19 @@ double calculate_center_pos(ccd_buffer_t &ccd_data) {
 
 	uint16_t threshold = (min_val + max_val) / 2;
 	// Perform binary operation on the values.
+	int count = 0;
 	for(int i = 0; i < Tsl1401cl::kSensorW; i++)
+	{
 		ccd_data[i] = (ccd_data[i] > threshold);
+		if(ccd_data[i])
+		count++;
+	}
 
 	// Calculate the average position.
 	double center = 0;
 	for(int i = 0; i < Tsl1401cl::kSensorW; i++)
 		center += i * ccd_data[i]; // The bins are weighted by their positions.
-	center /= 128;
+	center /= count;
 
 	// If you only wants to divide by the bins that are taken into account,
 	// comment out the following section.
