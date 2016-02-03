@@ -75,7 +75,11 @@ int main(void) {
 		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
 		// Calculate the new steering wheel positoin and adapated driving speed.
 		steer_pos = STEERING_CENTER + (int)pid_servo.calculate(dt, center_pos);
-		drive_pwr = INI_DRIVING_POWER - (int)pid_motor.calculate(dt, center_pos); // THIS SHOULD BE steer_pos
+		int drive_pwr_diff = (int)pid_motor.calculate(dt, center_pos); // THIS SHOULD BE steer_pos
+		if(drive_pwr_diff > 0)
+			drive_pwr = INI_DRIVING_POWER - drive_pwr_diff;
+		else
+			drive_pwr = INI_DRIVING_POWER + drive_pwr_diff;
 
 		// Apply the newly calculated result.
 		peripherals.steering->SetDegree(steer_pos);
