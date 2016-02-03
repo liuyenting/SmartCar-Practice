@@ -18,13 +18,15 @@ int main(void) {
 
 	//init pid for servo and motor
 	Pid pidservo(-STEERING_RANGE,STEERING_RANGE,KP,KI,KD);
-	pidservo.set_target(64);
+	pidservo.set_target(64.0);
 
-
-
+	Pid pidmotor(-LOWEST_DRIVING,LOWEST_DRIVING,kp,ki,kd);
+	pidmotor.set_target(64.0);
 
 	double center_pos = 0;
 	int steer_pos = STEERING_CENTER;
+
+	int driving_power = 0;
 
 	ccd_buffer_t avg_ccd_data;
 
@@ -33,7 +35,7 @@ int main(void) {
 
 	// Set driving motor speed.
 	peripherals.driving->SetClockwise(false);
-	peripherals.driving->SetPower(DRIVING_POWER);
+	peripherals.driving->SetPower(INI_DRIVING_POWER);
 	//start to count the dt
 	libsc::Timer::TimerInt prev_time = libsc::System::Time();
 	float dt;
@@ -69,6 +71,10 @@ int main(void) {
 		// Change the steering position.
 		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
 		steer_pos = STEERING_CENTER+(int)pidservo.calculate(dt,center_pos);
+		if((int)pidmotor.calculate(dt,center_pos)>0)
+		driving_power = INI_DRIVING_POWER-(int)pidmotor.calculate(dt,center_pos);
+		else
+		driving_power = INI_DRIVING_POWER+(int)pidmotor.calculate(dt,center_pos);
 
 		/*if(center_pos < LEFT_POS)
 			steer_pos = 1450;
@@ -86,6 +92,9 @@ int main(void) {
 
 		// Set steering wheel position.
 		peripherals.steering->SetDegree(steer_pos);
+
+		//set the driving speed
+		peripherals.driving->SetPower(driving_power);
 
 		System::DelayMs(REFRESH_INTERVAL);
 	}
