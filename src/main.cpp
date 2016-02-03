@@ -148,7 +148,7 @@ double calculate_center_pos(ccd_buffer_t &ccd_data) {
 	uint8_t count = 0;
 	double center = 0;
 	for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
-		if(ccd_data[i]) {
+		if(ccd_data[i] > threshold) {
 			center += i; // Weighted by the pixel's location.
 			++count;
 		}
