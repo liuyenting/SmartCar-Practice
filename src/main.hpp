@@ -51,7 +51,7 @@ Mcg::Config Mcg::GetMcgConfig() {
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 
 /* Type definitions */
-struct peripherals_t {
+typedef struct {
 	libsc::St7735r *lcd;
 	libsc::Tsl1401cl *ccd;
 
@@ -59,7 +59,7 @@ struct peripherals_t {
 	libsc::AlternateMotor *driving;
 
 	libsc::LcdTypewriter *typewriter;
-};
+} peripherals_t;
 
 typedef struct {
 	int min;
@@ -73,8 +73,8 @@ typedef struct {
 } pid_var_t;
 
 /* Prototypes */
-void init(struct peripherals_t &peripherals);
+void init(peripherals_t &peripherals);
 double calculate_center_pos(ccd_buffer_t &ccd_data);
-void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t& ccd_data);
+void print_scan_result(peripherals_t &peripherals, ccd_buffer_t& ccd_data);
 
 #endif

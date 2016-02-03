@@ -94,7 +94,7 @@ int main(void) {
 	return 0;
 }
 
-void init(struct peripherals_t &peripherals) {
+void init(peripherals_t &peripherals) {
 	// Init the LCD hardware.
 	St7735r::Config st7735r_config;
 	st7735r_config.is_revert = false;
@@ -134,24 +134,21 @@ double calculate_center_pos(ccd_buffer_t &ccd_data) {
 	}
 
 	uint16_t threshold = (min_val + max_val) / 2;
-	// Perform binary operation on the values.
-	int count = 0;
-	for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
-		ccd_data[i] = (ccd_data[i] > threshold);
-		if(ccd_data[i])
-			count++;
-	}
-
-	// Calculate the average position.
+	// Perform binary operation on the pixels.
+	uint8_t count = 0;
 	double center = 0;
-	for(int i = 0; i < Tsl1401cl::kSensorW; i++)
-		center += i * ccd_data[i]; // The bins are weighted by their positions.
+	for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
+		if(ccd_data[i]) {
+			center += i; // Weighted by the pixel's location.
+			++count;
+		}
+	}
 	center /= count;
 
 	return center;
 }
 
-void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
+void print_scan_result(peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
 		peripherals.lcd->SetRegion(Lcd::Rect(i, (225-ccd_data[i])/2.0, 1, 1));
 		peripherals.lcd->FillColor(Lcd::kWhite);
