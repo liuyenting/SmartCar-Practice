@@ -8,7 +8,7 @@ char str_buf[32];
 #define USE_LCD
 
 const pid_var_t pid_servo_var = { .kp = 18, .ki = 0, .kd = 0 };
-const pid_var_t pid_motor_var = { .kp = 10, .ki = 0, .kd = 0 };
+const pid_var_t pid_motor_var = { .kp = 17, .ki = 0, .kd = 0 };
 
 const range_t pid_servo_range = { .min = -600, .max = 600 };
 const range_t pid_motor_range = { .min = -250, .max = 250 };
