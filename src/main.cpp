@@ -23,11 +23,11 @@ int main(void) {
 	// init pid for servo and motor
 	Pid pid_servo(pid_servo_range.min, pid_servo_range.max,
 	              pid_servo_var.kp, pid_servo_var.ki, pid_servo_var.kd);
-	pid_servo.set_target(63.0);
+	pid_servo.set_target(63.5);
 
 	Pid pid_motor(pid_motor_range.min, pid_motor_range.max,
 	              pid_motor_var.kp, pid_motor_var.ki, pid_motor_var.kd);
-	pid_motor.set_target(63.0);
+	pid_motor.set_target(63.5);
 
 	double center_pos = 0;
 
