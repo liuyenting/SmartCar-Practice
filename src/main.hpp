@@ -31,12 +31,12 @@ Mcg::Config Mcg::GetMcgConfig() {
 
 #include "pid.hpp"
 
-#define REFRESH_INTERVAL 50 // 50ms interval, 20FPS
+#define REFRESH_INTERVAL 20 // 50ms interval, 20FPS
 #define AVERAGE_COUNTS  5 // Average interval, unit: sample.
 
 #define STEERING_CENTER 1000
 
-#define INI_DRIVING_POWER 500
+#define INI_DRIVING_POWER 400
 
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 

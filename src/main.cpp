@@ -11,7 +11,7 @@ const pid_var_t pid_servo_var(18, 0, 0);
 const pid_var_t pid_motor_var(17, 0, 0);
 
 const range_t pid_servo_range(-600, 600);
-const range_t pid_motor_range(-250, 250);
+const range_t pid_motor_range(-100, 100);
 
 int main(void) {
 	System::Init();
