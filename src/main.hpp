@@ -31,17 +31,17 @@ Mcg::Config Mcg::GetMcgConfig() {
 
 #include "pid.hpp"
 
-#define REFRESH_INTERVAL 5 // 50ms interval, 20FPS
-#define AVERAGE_COUNTS  5 // Average interva, unit: sample.
+#define REFRESH_INTERVAL 50 // 50ms interval, 20FPS
+#define AVERAGE_COUNTS  5 // Average interval, unit: sample.
 
-#define STEERING_CENTER  900
-#define STEERING_RANGE  400
+#define STEERING_CENTER 1000
+#define STEERING_RANGE  600
 
-#define DRIVING_POWER 0
+#define DRIVING_POWER 300
 
-#define KD 1
-#define KI 1
-#define KP 1
+#define KD 0
+#define KI 0
+#define KP 18
 
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 

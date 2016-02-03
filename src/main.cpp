@@ -6,8 +6,8 @@ using namespace libbase::k60;
 char str_buf[32];
 const uint16_t color = 0xFFFF;
 
-#define LEFT_POS 40
-#define RIGHT_POS 60
+#define LEFT_POS 60
+#define RIGHT_POS 80
 
 int main(void) {
 	System::Init();
@@ -15,6 +15,13 @@ int main(void) {
 	// Bundle-up all of our peripheral devices.
 	peripherals_t peripherals;
 	init(peripherals);
+
+	//init pid for servo and motor
+	Pid pidservo(-STEERING_RANGE,STEERING_RANGE,KP,KI,KD);
+	pidservo.set_target(64);
+
+
+
 
 	double center_pos = 0;
 	int steer_pos = STEERING_CENTER;
@@ -27,7 +34,9 @@ int main(void) {
 	// Set driving motor speed.
 	peripherals.driving->SetClockwise(false);
 	peripherals.driving->SetPower(DRIVING_POWER);
-
+	//start to count the dt
+	libsc::Timer::TimerInt prev_time = libsc::System::Time();
+	float dt;
 	while(true) {
 		// Dummy read to wipe out the charges on the CCD.
 		peripherals.ccd->StartSample();
@@ -51,19 +60,26 @@ int main(void) {
 
 		center_pos = calculate_center_pos(avg_ccd_data);
 
+        //print center_pos
 		sprintf(str_buf, "ERR = %.2f", center_pos);
 		peripherals.lcd->SetRegion(Lcd::Rect(0, 0, 128, 16));
 		peripherals.typewriter->WriteString(str_buf);
-		// print_error_pos(peripherals, error_val);
+
 
 		// Change the steering position.
-		if(center_pos < LEFT_POS)
-			steer_pos = 700;
-		else if(center_pos > RIGHT_POS)
-			steer_pos = 1100;
-		else
-			steer_pos = 900;
+		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
+		steer_pos = STEERING_CENTER+(int)pidservo.calculate(dt,center_pos);
 
+		/*if(center_pos < LEFT_POS)
+			steer_pos = 1450;
+		else if(center_pos > RIGHT_POS)
+			steer_pos = 450;
+		else
+			steer_pos = 1000;
+		*/
+
+
+		//print steer_pos
 		sprintf(str_buf, "POS = %d", steer_pos);
 		peripherals.lcd->SetRegion(Lcd::Rect(0, 16, 128, 16));
 		peripherals.typewriter->WriteString(str_buf);
@@ -151,7 +167,7 @@ double calculate_center_pos(ccd_buffer_t &ccd_data) {
 
 void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data) {
 	for(uint16_t i = 0; i < Tsl1401cl::kSensorW; i++) {
-		peripherals.lcd->SetRegion(Lcd::Rect(i, (255-ccd_data[i])/2.0, 1, 1));
+		peripherals.lcd->SetRegion(Lcd::Rect(i, (225-ccd_data[i])/2.0, 1, 1));
 		peripherals.lcd->FillColor(Lcd::kWhite);
 	}
 
@@ -160,7 +176,7 @@ void print_scan_result(struct peripherals_t &peripherals, ccd_buffer_t &ccd_data
 
 	// Clear Region.
 	for(uint16_t i=0; i<Tsl1401cl::kSensorW; i++) {
-		peripherals.lcd->SetRegion(Lcd::Rect(i, (255 - ccd_data[i])/2.0, 1, 1));
+		peripherals.lcd->SetRegion(Lcd::Rect(i, (225-ccd_data[i])/2.0, 1, 1));
 		peripherals.lcd->FillColor(Lcd::kBlack);
 	}
 }
