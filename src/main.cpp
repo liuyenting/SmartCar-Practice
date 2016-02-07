@@ -32,7 +32,7 @@ int main(void) {
 	// Variables to store the driving details.
 	int steer_pos = STEERING_CENTER;
 	int max_drive_pwr = 500;
-	int drive_pwr = INI_DRIVING_POWER;
+	int drive_pwr = max_drive_pwr;
 
 	// Tuck all the variables in the variable manager.
 	pVarManager manager;
