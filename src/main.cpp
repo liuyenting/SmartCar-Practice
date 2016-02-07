@@ -90,7 +90,7 @@ int main(void) {
 		center_pos = calculate_center_pos(avg_ccd_data);
 
 		// Time elapsed since last calculation.
-		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
+		dt = Timer::TimeDiff(System::Time(), prev_time);
 		// Calculate the new steering wheel positoin and adapated driving speed.
 		steer_pos = STEERING_CENTER + (int)pid_servo.calculate(dt, center_pos);
 		int drive_pwr_diff = (int)pid_motor.calculate(dt, steer_pos);
@@ -115,6 +115,8 @@ int main(void) {
 		peripherals.lcd->SetRegion(Lcd::Rect(0, 32, 128, 16));
 		peripherals.typewriter->WriteString(str_buf);
 		#endif
+
+		manager.sendWatchData();
 
 		System::DelayMs(REFRESH_INTERVAL);
 	}

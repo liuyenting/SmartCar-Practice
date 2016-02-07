@@ -32,7 +32,7 @@ Mcg::Config Mcg::GetMcgConfig() {
 #include "pid.hpp"
 #include "pVarManager.h"
 
-#define REFRESH_INTERVAL 20 // 50ms interval, 20FPS
+#define REFRESH_INTERVAL 10 // 10ms interval, 20FPS
 #define AVERAGE_COUNTS  5 // Average interval, unit: sample.
 
 #define STEERING_CENTER 1000
