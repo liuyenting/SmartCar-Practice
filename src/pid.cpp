@@ -3,29 +3,29 @@
 class PidImpl
 {
 public:
-	PidImpl(double _min, double _max, // Response boundary.
-	        double _kp, double _ki, double _kd);
-	double calculate(float dt, double target, double curr_val);
+	PidImpl(float _min, float _max, // Response boundary.
+	        float _kp, float _ki, float _kd);
+	float calculate(float dt, float target, float curr_val);
 
 private:
-	double min, max;
-	double kp, ki, kd;
+	float min, max;
+	float kp, ki, kd;
 
-	double prev_err_val;
-	double integral_val;
+	float prev_err_val;
+	float integral_val;
 };
 
-Pid::Pid(double min, double max,
-         double kp, double ki, double kd) {
+Pid::Pid(float min, float max,
+         float kp, float ki, float kd) {
 	set_target(0.0);
 	pid_impl = new PidImpl(min, max, kp, kd, ki);
 }
 
-void Pid::set_target(double _target_val) {
+void Pid::set_target(float _target_val) {
 	target_val = _target_val;
 }
 
-double Pid::calculate(float dt, double curr_val) {
+float Pid::calculate(float dt, float curr_val) {
 	return pid_impl->calculate(dt, target_val, curr_val);
 }
 
@@ -33,30 +33,30 @@ Pid::~Pid() {
 	delete pid_impl;
 }
 
-PidImpl::PidImpl(double _min, double _max,
-                 double _kp, double _ki, double _kd)
+PidImpl::PidImpl(float _min, float _max,
+                 float _kp, float _ki, float _kd)
 	: min(_min), max(_max),
 	kp(_kp), ki(_ki), kd(_kd),
 	prev_err_val(0), integral_val(0) {
 }
 
-double PidImpl::calculate(float dt, double target_val, double curr_val) {
+float PidImpl::calculate(float dt, float target_val, float curr_val) {
 	// Calculate error.
-	double curr_err_val = target_val - curr_val;
+	float curr_err_val = target_val - curr_val;
 
 	// Proportional.
-	double p_out = kp * curr_err_val;
+	float p_out = kp * curr_err_val;
 
 	// Integral.
 	integral_val += curr_err_val * dt;
-	double i_out = ki * integral_val;
+	float i_out = ki * integral_val;
 
 	// Derivative.
-	double derivative = (curr_err_val - prev_err_val) / dt;
-	double d_out = kd * derivative;
+	float derivative = (curr_err_val - prev_err_val) / dt;
+	float d_out = kd * derivative;
 
 	// Calculate total output.
-	double output = p_out + i_out + d_out;
+	float output = p_out + i_out + d_out;
 
 	// Restrict to max/min.
 	if(output > max)

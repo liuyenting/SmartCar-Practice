@@ -7,21 +7,21 @@ class PidImpl;
 class Pid
 {
 public:
-	Pid(double min, double max,    // Response boundary.
-	    double kp, double ki, double kd);
+	Pid(float min, float max,    // Response boundary.
+	    float kp, float ki, float kd);
 	~Pid();
 
 	// Set the target value to maintain.
-	void set_target(double _target_val);
+	void set_target(float _target_val);
 
 	// Return the calculation result.
-	double calculate(float dt, double curr_val);
+	float calculate(float dt, float curr_val);
 
 	void reset_time();
 
 private:
 	PidImpl *pid_impl;
-	double target_val;
+	float target_val;
 };
 
 #endif
