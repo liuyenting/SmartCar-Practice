@@ -30,13 +30,12 @@ Mcg::Config Mcg::GetMcgConfig() {
 #include <libsc/lcd_typewriter.h>
 
 #include "pid.hpp"
+#include "pVarManager.h"
 
 #define REFRESH_INTERVAL 20 // 50ms interval, 20FPS
 #define AVERAGE_COUNTS  5 // Average interval, unit: sample.
 
 #define STEERING_CENTER 1000
-
-#define INI_DRIVING_POWER 400
 
 typedef std::array<uint16_t, libsc::Tsl1401cl::kSensorW> ccd_buffer_t;
 
@@ -61,18 +60,18 @@ typedef struct struct_range_t {
 } range_t;
 
 typedef struct struct_pid_var_t {
-	double kp;
-	double ki;
-	double kd;
+	float kp;
+	float ki;
+	float kd;
 
-	struct_pid_var_t(double _kp, double _ki, double _kd)
+	struct_pid_var_t(float _kp, float _ki, float _kd)
 		: kp(_kp), ki(_ki), kd(_kd) {
 	}
 } pid_var_t;
 
 /* Prototypes */
 void init(peripherals_t &peripherals);
-double calculate_center_pos(ccd_buffer_t &ccd_data);
+float calculate_center_pos(ccd_buffer_t &ccd_data);
 void print_scan_result(peripherals_t &peripherals, ccd_buffer_t& ccd_data);
 
 #endif

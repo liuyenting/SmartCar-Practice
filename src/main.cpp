@@ -5,13 +5,7 @@ using namespace libbase::k60;
 
 char str_buf[32];
 
-#define USE_LCD
-
-const pid_var_t pid_servo_var(18, 0, 0);
-const pid_var_t pid_motor_var(17, 0, 0);
-
-const range_t pid_servo_range(-600, 600);
-const range_t pid_motor_range(-100, 100);
+// #define USE_LCD
 
 int main(void) {
 	System::Init();
@@ -20,20 +14,44 @@ int main(void) {
 	peripherals_t peripherals;
 	init(peripherals);
 
-	// init pid for servo and motor
+	// Init pid for servo and motor
+	pid_var_t pid_servo_var(0, 0, 0);
+	range_t pid_servo_range(-600, 600);
 	Pid pid_servo(pid_servo_range.min, pid_servo_range.max,
 	              pid_servo_var.kp, pid_servo_var.ki, pid_servo_var.kd);
 	pid_servo.set_target(63.5);
 
+	pid_var_t pid_motor_var(0, 0, 0);
+	range_t pid_motor_range(-100, 100);
 	Pid pid_motor(pid_motor_range.min, pid_motor_range.max,
 	              pid_motor_var.kp, pid_motor_var.ki, pid_motor_var.kd);
 	pid_motor.set_target(63.5);
 
-	double center_pos = 0;
+	float center_pos = 0;
 
 	// Variables to store the driving details.
 	int steer_pos = STEERING_CENTER;
+	int max_drive_pwr = 500;
 	int drive_pwr = INI_DRIVING_POWER;
+
+	// Tuck all the variables in the variable manager.
+	pVarManager manager;
+	// Driving related.
+	manager.addWatchedVar(&steer_pos, "Current steering position");
+	manager.addWatchedVar(&drive_pwr, "Current driving power");
+	manager.addWatchedVar(&center_pos, "Current center position");
+	// PID related.
+	manager.addSharedVar(&(pid_servo_var.kp), "Servo Kp");
+	manager.addSharedVar(&(pid_servo_var.ki), "Servo Ki");
+	manager.addSharedVar(&(pid_servo_var.kd), "Servo Kd");
+	manager.addSharedVar(&(pid_servo_range.max), "Servo maximum deviation");
+	manager.addSharedVar(&(pid_servo_range.min), "Servo minimum deviation");
+	manager.addSharedVar(&(pid_motor_var.kp), "Motor Kp");
+	manager.addSharedVar(&(pid_motor_var.ki), "Motor Ki");
+	manager.addSharedVar(&(pid_motor_var.kd), "Motor Kd");
+	manager.addSharedVar(&max_drive_pwr, "Motor maximum power");
+	manager.addSharedVar(&(pid_motor_range.max), "Motor maximum deviation");
+	manager.addSharedVar(&(pid_motor_range.min), "Motor minimum deviation");
 
 	ccd_buffer_t avg_ccd_data;
 
@@ -75,11 +93,11 @@ int main(void) {
 		dt = Timer::TimeDiff(System::Time(), prev_time) / 1000.0f;
 		// Calculate the new steering wheel positoin and adapated driving speed.
 		steer_pos = STEERING_CENTER + (int)pid_servo.calculate(dt, center_pos);
-		int drive_pwr_diff = (int)pid_motor.calculate(dt, center_pos); // THIS SHOULD BE steer_pos
+		int drive_pwr_diff = (int)pid_motor.calculate(dt, steer_pos);
 		if(drive_pwr_diff > 0)
-			drive_pwr = INI_DRIVING_POWER - drive_pwr_diff;
+			drive_pwr = max_drive_pwr - drive_pwr_diff;
 		else
-			drive_pwr = INI_DRIVING_POWER + drive_pwr_diff;
+			drive_pwr = max_drive_pwr + drive_pwr_diff;
 
 		// Apply the newly calculated result.
 		peripherals.steering->SetDegree(steer_pos);
@@ -132,7 +150,7 @@ void init(peripherals_t &peripherals) {
 	peripherals.typewriter = new LcdTypewriter(typewriter_config);
 }
 
-double calculate_center_pos(ccd_buffer_t &ccd_data) {
+float calculate_center_pos(ccd_buffer_t &ccd_data) {
 	// Search for the minimum and maximum value.
 	uint16_t min_val, max_val;
 	min_val = max_val = ccd_data[0]; // Default value is the first element.
@@ -146,7 +164,7 @@ double calculate_center_pos(ccd_buffer_t &ccd_data) {
 	uint16_t threshold = (min_val + max_val) / 2;
 	// Perform binary operation on the pixels.
 	uint8_t count = 0;
-	double center = 0;
+	float center = 0;
 	for(int i = 0; i < Tsl1401cl::kSensorW; i++) {
 		if(ccd_data[i] > threshold) {
 			center += i; // Weighted by the pixel's location.
